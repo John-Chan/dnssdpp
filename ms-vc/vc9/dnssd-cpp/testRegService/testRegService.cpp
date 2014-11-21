@@ -38,10 +38,11 @@ void	list_all_srvtype()
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
+	std::cout<< "init longing"<<std::endl;
 	air::loging::logingInit(true,"service-reg");
 
 	boost::asio::io_service ios;
-	air::bonjour::DNSDApi dll("dnssd.dll");
+	std::cout<< "loading dnssd.dll"<<std::endl;
 	if(!dll.load()){
 		std::cout<< "dll.load fail"<<std::endl;
 		return -1;
