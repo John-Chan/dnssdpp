@@ -18,9 +18,14 @@ namespace logV{
 	}
 
 	// call this function after log-librare init
-	static void	add_more_attrib_support()
+	static void	add_more_attrib_support(bool use_local_clock=true)
 	{
-		logging::core::get()->add_global_attribute("TimeStamp", log_attrib::utc_clock());
+		
+		if(use_local_clock){
+			logging::core::get()->add_global_attribute("TimeStamp", log_attrib::local_clock());
+		}else{
+			logging::core::get()->add_global_attribute("TimeStamp", log_attrib::utc_clock());
+		}
 		logging::core::get()->add_global_attribute("ProcessID",log_attrib::current_process_id());
 		logging::core::get()->add_global_attribute("ThreadID",log_attrib::current_thread_id());
 		logging::core::get()->add_global_attribute("RecordID", log_attrib::counter< unsigned int >());

@@ -43,6 +43,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	boost::asio::io_service ios;
 	std::cout<< "loading dnssd.dll"<<std::endl;
+	air::bonjour::DNSDApi dll("dnssd.dll");
 	if(!dll.load()){
 		std::cout<< "dll.load fail"<<std::endl;
 		return -1;
