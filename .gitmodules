@@ -1,0 +1,3 @@
+[submodule "depends/mrd_basic_source/muradin_basic"]
+	path = depends/mrd_basic_source/muradin_basic
+	url = ../muradin_basic.git
