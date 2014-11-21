@@ -11,5 +11,6 @@
 #include <ddnspp/bonjourpp/servicetype.hpp>
 #include <ddnspp/bonjourpp/txtrecords.hpp>
 #include <ddnspp/bonjourpp/servicefactory.hpp>
+#include <ddnspp/common/utf8string.hpp>
 
 #endif // DNS_SD_INCL_H__
