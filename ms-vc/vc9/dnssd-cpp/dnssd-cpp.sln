@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testExplorerService", "testExplorerService\testExplorerService.vcproj", "{EF1C9A84-FD6F-48DA-B546-E9F4C21A1797}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testRegService", "testRegService\testRegService.vcproj", "{9FA7EC20-2DC5-44BD-867D-D3D9BFA25016}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF1C9A84-FD6F-48DA-B546-E9F4C21A1797}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EF1C9A84-FD6F-48DA-B546-E9F4C21A1797}.Debug|Win32.Build.0 = Debug|Win32
+		{EF1C9A84-FD6F-48DA-B546-E9F4C21A1797}.Release|Win32.ActiveCfg = Release|Win32
+		{EF1C9A84-FD6F-48DA-B546-E9F4C21A1797}.Release|Win32.Build.0 = Release|Win32
+		{9FA7EC20-2DC5-44BD-867D-D3D9BFA25016}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9FA7EC20-2DC5-44BD-867D-D3D9BFA25016}.Debug|Win32.Build.0 = Debug|Win32
+		{9FA7EC20-2DC5-44BD-867D-D3D9BFA25016}.Release|Win32.ActiveCfg = Release|Win32
+		{9FA7EC20-2DC5-44BD-867D-D3D9BFA25016}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
