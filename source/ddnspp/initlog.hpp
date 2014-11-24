@@ -2,7 +2,10 @@
 #define AIRSERVER_INIT_FOR_LOGING_HPP__
 #include <string>
 #include <logv/logv.hpp>
+//#include <logv/ez_setup.hpp>
 namespace air{namespace loging {
+
+	
 
 	/// loging level (string)
 	/// "TRACE"
@@ -11,30 +14,19 @@ namespace air{namespace loging {
 	/// "WARNG"
 	/// "ERROR"
 	/// "FATAL"
-	static	void	logingInit(bool consolOnly,const std::string& unque_name,const std::string& logLevel="INFOR")
+	static	void	logingInit(bool consolOnly,const std::string& unque_name,const std::string& exe_name,logV::log_severity_level lv=logV::info)
 	{
-
-		std::string	logingFilter="%Severity% >= " +logLevel;
+		//std::string	logingFilter="%Severity% >= " +logLevel;
 		logV::logging::settings setts;
 		setts["Core"]["DisableLogging"] = false;
 
-		setts["Sinks.Console"]["Asynchronous"] = "false";
-		setts["Sinks.Console"]["Destination"] = "Console";
-		setts["Sinks.Console"]["Filter"] = logingFilter;
-		setts["Sinks.Console"]["AutoFlush"] = true;
-		setts["Sinks.Console"]["Format"] = "%RecordID% - <%Severity%> - <%TimeStamp%> - <%ThreadID%> - %Message%";
-
-
+		logV::ConsolLogCfg	consolCfg(lv,unque_name); 
+		consolCfg.put_setting(setts);
 		if(!consolOnly){
-			setts["Sinks.File"]["Asynchronous"] = "false";
-			setts["Sinks.File.Destination"] = "TextFile";
-			setts["Sinks.File"]["Filter"] = logingFilter;
-			setts["Sinks.File.FileName"] = unque_name+"_%3N.log";
-			setts["Sinks.File.AutoFlush"] = true;
-			setts["Sinks.File"]["Format"] = "%RecordID% - <%Severity%> - <%TimeStamp%> - <%ThreadID%> - %Message%";
-			setts["Sinks.File.RotationSize"] = 1024*1024; // 1024  KB
-			setts["Sinks.File.RotationInterval"] = 5; //or 5 seconds
-			setts["Sinks.File.Target"] = unque_name+"-log-archive"; 
+
+			logV::TxtLogCfg txtcfg(lv,unque_name);
+			txtcfg.setLogArchive(exe_name);
+			txtcfg.put_setting(setts);
 
 		}
 		logV::init_log_env(setts);

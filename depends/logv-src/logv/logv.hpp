@@ -15,6 +15,7 @@
 #include "loger.hpp"
 #include "log_severity_level.hpp"
 #include "loging_utility.hpp"
+#include "ez_setup.hpp"
 
 
 

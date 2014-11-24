@@ -37,6 +37,19 @@ namespace logV{
 		"FATAL"
 	};
 
+	static	const char* log_severity_level_name(log_severity_level lv)
+	{
+		switch(lv){
+			case trace: return k_severity_name[trace];
+			case debug: return k_severity_name[debug];
+			case info: return k_severity_name[info];
+			case warning: return k_severity_name[warning];
+			case error: return k_severity_name[error];
+			case fatal: return k_severity_name[fatal];
+			default: return k_severity_name[info];
+		}
+	}
+
 	// boost.log needs this interface
 	static std::ostream& operator<< (std::ostream& strm, log_severity_level level)
 	{

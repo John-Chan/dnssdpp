@@ -39,7 +39,7 @@ void	list_all_srvtype()
 int _tmain(int argc, _TCHAR* argv[])
 {
 	std::cout<< "init longing"<<std::endl;
-	air::loging::logingInit(true,"service-reg");
+	air::loging::logingInit(true,"service-reg",argv[0]);
 
 	boost::asio::io_service ios;
 	std::cout<< "loading dnssd.dll"<<std::endl;
