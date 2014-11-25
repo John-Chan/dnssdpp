@@ -13,153 +13,127 @@
 
 #include <logv/logv.hpp>
 
-namespace air{namespace bonjour {
+namespace air
+{
+namespace bonjour
+{
 
-	class ServiceFactory;
+class ServiceFactory;
 
-	/// Event callback
-	typedef boost::function
-		<
-		void
-		(
-		DNSServiceFlags,		/// _1 flags
-		boost::uint32_t,		/// _2 interfaceIndex
-		BonjourError,			/// _3 error 
-		std::string,			/// _4 service name (for subsequent use in the ServiceResolver )
-		std::string,			/// _5 service type
-		std::string				/// _6 domian
-		)
-		>		
-		RemoteServiceEvtCallback;
+/// Event callback
+typedef boost::function
+<
+void
+(
+    DNSServiceFlags,		/// _1 flags
+    boost::uint32_t,		/// _2 interfaceIndex
+    BonjourError,			/// _3 error
+    std::string,			/// _4 service name (for subsequent use in the ServiceResolver )
+    std::string,			/// _5 service type
+    std::string				/// _6 domian
+)
+>
+RemoteServiceEvtCallback;
 
-	/// RemoteService
-	/// A service which is found from network(e.g. via ServiceFactory.createServiceBrower)
-	class RemoteService:boost::noncopyable,public boost::enable_shared_from_this<RemoteService>
-	{
-		friend class ServiceFactory;
-	private:
-		CoreContextPtr		core;
-		RemoteServiceEvtCallback	evtCallback;	
+/// RemoteService
+/// A service which is found from network(e.g. via ServiceFactory.createServiceBrower)
+class RemoteService:boost::noncopyable,public boost::enable_shared_from_this<RemoteService>
+{
+    friend class ServiceFactory;
+private:
+    CoreContextPtr		core;
+    RemoteServiceEvtCallback	evtCallback;
 
-	public:
-		RemoteService(boost::asio::io_service& ios,const DNSDApi &dll,const RemoteServiceEvtCallback& func);
-		~RemoteService();
+public:
+    RemoteService(boost::asio::io_service& ios,const DNSDApi &dll,const RemoteServiceEvtCallback& func)
+        :core(new CoreContext(ios,dll)),evtCallback(func)
+    {
+    }
+    ~RemoteService()
+    {
+    }
 
-		CoreContextPtr		getCoreContext();
+    CoreContextPtr		getCoreContext()
+    {
+        return core;
+    }
 
-		/// return old one
-		RemoteServiceEvtCallback				setEvtCallback(const RemoteServiceEvtCallback& func);
+    /// return old one
+    RemoteServiceEvtCallback				setEvtCallback(const RemoteServiceEvtCallback& func)
+    {
+        RemoteServiceEvtCallback old=evtCallback;
+        evtCallback=func;
+        return old;
+    }
 
-	private:
-		static void		DNSSD_API	DNSServiceBrowseReplyCallback(
-			DNSServiceRef                       sdRef,
-			DNSServiceFlags                     flags,
-			uint32_t                            interfaceIndex,
-			DNSServiceErrorType                 errorCode,
-			const char                          *serviceName,
-			const char                          *regtype,
-			const char                          *replyDomain,
-			void                                *context
-			);
+private:
+    static void		DNSSD_API	DNSServiceBrowseReplyCallback(
+        DNSServiceRef                       sdRef,
+        DNSServiceFlags                     flags,
+        uint32_t                            interfaceIndex,
+        DNSServiceErrorType                 errorCode,
+        const char                          *serviceName,
+        const char                          *regtype,
+        const char                          *replyDomain,
+        void                                *context
+    )
+    {
 
-		void	evtHanler(
-			DNSServiceRef                       sdRef,
-			DNSServiceFlags                     flags,
-			uint32_t                            interfaceIndex,
-			DNSServiceErrorType                 errorCode,
-			const char                          *serviceName,
-			const char                          *regtype,
-			const char                          *replyDomain,
-			void                                *context);
+        RemoteService* thisService=NULL;
+        if(context != NULL) {
+            thisService=(RemoteService*)context;
+            thisService->evtHanler(sdRef,flags,interfaceIndex,errorCode,serviceName,regtype,replyDomain,context);
+        }
 
-	};
-	typedef	boost::shared_ptr<RemoteService>	RemoteServicePtr;
+    }
 
-	/************************************************************************
-	//  Impl
-	//  --------------------------------------------------------------------
-	//                                                                  
-	************************************************************************/
-	RemoteService::RemoteService(boost::asio::io_service& ios,const DNSDApi &dll,const RemoteServiceEvtCallback& func)
-		:core(new CoreContext(ios,dll)),evtCallback(func)
-	{
-	}
-	RemoteService::~RemoteService()
-	{
-	}
-	CoreContextPtr		RemoteService::getCoreContext()
-	{
-		return core;
-	}
+    /// Possible values are kDNSServiceFlagsMoreComing and kDNSServiceFlagsAdd.
+    void	evtHanler(
+        DNSServiceRef                       sdRef,
+        DNSServiceFlags                     flags,
+        uint32_t                            interfaceIndex,
+        DNSServiceErrorType                 errorCode,
+        const char                          *serviceName,
+        const char                          *regtype,
+        const char                          *replyDomain,
+        void                                *context)
+    {
+        air::bonjour::BonjourError err(errorCode);
+        /*bool moreData=(flags & kDNSServiceFlagsMoreComing);
+        if (moreData) return;*/
 
-	RemoteServiceEvtCallback	RemoteService::setEvtCallback(const RemoteServiceEvtCallback& func)
-	{
-		RemoteServiceEvtCallback old=evtCallback;
-		evtCallback=func;
-		return old;
-	}
-	void		DNSSD_API	RemoteService::DNSServiceBrowseReplyCallback(
-		DNSServiceRef                       sdRef,
-		DNSServiceFlags                     flags,
-		uint32_t                            interfaceIndex,
-		DNSServiceErrorType                 errorCode,
-		const char                          *serviceName,
-		const char                          *regtype,
-		const char                          *replyDomain,
-		void                                *context
-		)
-	{
+        if(err) {
+            LOG_ERROR<<err.getErrorCode()<<"," <<err.getMessage();
+        } else {
 
-		RemoteService* thisService=NULL;
-		if(context != NULL){
-			thisService=(RemoteService*)context;
-			thisService->evtHanler(sdRef,flags,interfaceIndex,errorCode,serviceName,regtype,replyDomain,context);
-		}
-		
-	}
+            if (flags & kDNSServiceFlagsAdd) {
+                LOG_INFO<<"DNSServiceBrowse found service";
+                LOG_INFO<<"flags:"<< flags;
+                LOG_INFO<<"interfaceIndex:"<< interfaceIndex;
+                LOG_INFO<<"serviceName:"<< serviceName;
+                LOG_INFO<<"regtype:"<<regtype;
+                LOG_INFO<<"replyDomain:"<<replyDomain;
+            } else {
+                LOG_INFO<<serviceName<<" removed";
+            }
+        }
 
-	/// Possible values are kDNSServiceFlagsMoreComing and kDNSServiceFlagsAdd.
-	void	RemoteService::evtHanler(
-		DNSServiceRef                       sdRef,
-		DNSServiceFlags                     flags,
-		uint32_t                            interfaceIndex,
-		DNSServiceErrorType                 errorCode,
-		const char                          *serviceName,
-		const char                          *regtype,
-		const char                          *replyDomain,
-		void                                *context)
-	{
-		air::bonjour::BonjourError err(errorCode);
-		/*bool moreData=(flags & kDNSServiceFlagsMoreComing);
-		if (moreData) return;*/
-	
-		if(err){
-			LOG_ERROR<<err.getErrorCode()<<"," <<err.getMessage();
-		}else{
+        if(evtCallback) {
+            evtCallback(
+                flags,
+                interfaceIndex,
+                err,
+                serviceName,
+                regtype,
+                replyDomain
+            );
+        }
+    }
 
-			if (flags & kDNSServiceFlagsAdd){
-				LOG_INFO<<"DNSServiceBrowse found service";
-				LOG_INFO<<"flags:"<< flags;
-				LOG_INFO<<"interfaceIndex:"<< interfaceIndex;
-				LOG_INFO<<"serviceName:"<< serviceName;
-				LOG_INFO<<"regtype:"<<regtype;
-				LOG_INFO<<"replyDomain:"<<replyDomain;
-			}else {
-				LOG_INFO<<serviceName<<" removed";
-			}
-		}
+};
+typedef	boost::shared_ptr<RemoteService>	RemoteServicePtr;
 
-		if(evtCallback){
-			evtCallback(
-				flags,
-				interfaceIndex,
-				err,
-				serviceName,
-				regtype,
-				replyDomain
-				);
-		}
-	}
 
-}}
+}
+}
 #endif // BONJOURSERVICE_BROWER_H

@@ -44,13 +44,27 @@ namespace air{namespace bonjour {
 		CoreContextPtr		core;
 		ServiceResolverEvtCallback	evtCallback;
 	public:
-		ServiceResolver(boost::asio::io_service& ios,const DNSDApi &dll,const ServiceResolverEvtCallback& func);
-		~ServiceResolver();
+		ServiceResolver(boost::asio::io_service& ios,const DNSDApi &dll,const ServiceResolverEvtCallback& func)
+			:core(new CoreContext(ios,dll)),evtCallback(func)
+		{
+		}
+		~ServiceResolver()
+		{
+			//LOG_DEBUG<<"ServiceResolver dead";
+		}
 
-		CoreContextPtr		getCoreContext();
+		CoreContextPtr		getCoreContext()
+		{
+			return core;
+		}
 
 		/// return old one
-		ServiceResolverEvtCallback				setEvtCallback(const ServiceResolverEvtCallback& func);
+		ServiceResolverEvtCallback				setEvtCallback(const ServiceResolverEvtCallback& func)
+		{
+			ServiceResolverEvtCallback old=evtCallback;
+			evtCallback=func;
+			return old;
+		}
 
 	private:
 		static void		DNSSD_API	DNSServiceResolveReplyCallback(
@@ -64,7 +78,16 @@ namespace air{namespace bonjour {
 			uint16_t                            txtLen,
 			const unsigned char                 *txtRecord,
 			void                                *context
-			);
+			)
+		{
+
+			ServiceResolver* thisService=NULL;
+			if(context != NULL){
+				thisService=(ServiceResolver*)context;
+				thisService->evtHanler(sdRef,flags,interfaceIndex,errorCode,fullname,hosttarget,port,txtLen,txtRecord,context);
+			}
+		}
+		/// Possible values: kDNSServiceFlagsMoreComing
 		void	evtHanler(
 			DNSServiceRef                       sdRef,
 			DNSServiceFlags                     flags,
@@ -75,70 +98,7 @@ namespace air{namespace bonjour {
 			uint16_t                            port,
 			uint16_t                            txtLen,
 			const unsigned char                 *txtRecord,
-			void                                *context);
-
-	};
-	typedef	boost::shared_ptr<ServiceResolver>	ServiceResolverPtr;
-
-	
-	/************************************************************************
-	//  Impl
-	//  --------------------------------------------------------------------
-	//                                                                  
-	************************************************************************/
-
-	ServiceResolver::ServiceResolver(boost::asio::io_service& ios,const DNSDApi &dll,const ServiceResolverEvtCallback& func)
-		:core(new CoreContext(ios,dll)),evtCallback(func)
-	{
-	}
-	ServiceResolver::~ServiceResolver()
-	{
-		//LOG_DEBUG<<"ServiceResolver dead";
-	}
-	CoreContextPtr		ServiceResolver::getCoreContext()
-	{
-		return core;
-	}
-
-	ServiceResolverEvtCallback	ServiceResolver::setEvtCallback(const ServiceResolverEvtCallback& func)
-	{
-		ServiceResolverEvtCallback old=evtCallback;
-		evtCallback=func;
-		return old;
-	}
-	void		DNSSD_API	ServiceResolver::DNSServiceResolveReplyCallback(
-		DNSServiceRef                       sdRef,
-		DNSServiceFlags                     flags,
-		uint32_t                            interfaceIndex,
-		DNSServiceErrorType                 errorCode,
-		const char                          *fullname,
-		const char                          *hosttarget,
-		uint16_t                            port,
-		uint16_t                            txtLen,
-		const unsigned char                 *txtRecord,
-		void                                *context
-		)
-	{
-
-		ServiceResolver* thisService=NULL;
-		if(context != NULL){
-			thisService=(ServiceResolver*)context;
-			thisService->evtHanler(sdRef,flags,interfaceIndex,errorCode,fullname,hosttarget,port,txtLen,txtRecord,context);
-		}
-	}
-
-	/// Possible values: kDNSServiceFlagsMoreComing
-	void	ServiceResolver::evtHanler(
-		DNSServiceRef                       sdRef,
-		DNSServiceFlags                     flags,
-		uint32_t                            interfaceIndex,
-		DNSServiceErrorType                 errorCode,
-		const char                          *fullname,
-		const char                          *hosttarget,
-		uint16_t                            port,
-		uint16_t                            txtLen,
-		const unsigned char                 *txtRecord,
-		void                                *context)
+			void                                *context)
 	{
 
 		air::bonjour::BonjourError err(errorCode);
@@ -183,5 +143,10 @@ namespace air{namespace bonjour {
 		}
 
 	}
+
+	};
+	typedef	boost::shared_ptr<ServiceResolver>	ServiceResolverPtr;
+
+
 }}
 #endif // BONJOUR_SERVICE_RESOLVER_H__

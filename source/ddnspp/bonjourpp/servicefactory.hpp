@@ -46,14 +46,73 @@ private:
 	boost::asio::io_service& ioService;
 
 private:
-	bool		hold(const ServiceFactory::AnyPtr& whatever);
-	bool		remove(const ServiceFactory::AnyPtr& whatever);
-	ServiceFactory::AnyPtrList::iterator	find(const ServiceFactory::AnyPtr& whatever);
+	bool		hold(const ServiceFactory::AnyPtr& whatever)
+	{
+#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
+		lock_type lock(mutex);
+		ServiceFactory::AnyPtrList::iterator found=find(whatever);
+		if(found == createdServices.end()){
+			createdServices.push_back(whatever);
+			return true;
+		}else{
+			return false;
+		}
+#else
+		return false;
+
+#endif
+	}
+	bool		remove(const ServiceFactory::AnyPtr& whatever)
+	{
+#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
+		lock_type lock(mutex);
+		ServiceFactory::AnyPtrList::iterator found=find(whatever);
+		if(found == createdServices.end()){
+			return false;
+		}else{
+			createdServices.erase(found);
+			return true;
+		}
+#else
+		return false;
+#endif
+	}
+	ServiceFactory::AnyPtrList::iterator	find(const ServiceFactory::AnyPtr& whatever)
+	{
+#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
+		ServiceFactory::AnyPtrList::iterator it=createdServices.begin();
+		ServiceFactory::AnyPtrList::iterator over=createdServices.end();
+		while(it != over){
+			if(whatever.get() == (*it).get())
+				break;
+			++it;
+		}
+		return it;
+#else
+		return ServiceFactory::AnyPtrList::iterator();
+#endif
+	}
 
 public:
-    ServiceFactory(boost::asio::io_service& ios,const DNSDApi& dll);
-	~ServiceFactory();
-	bool	removeService(const boost::shared_ptr<void>& ptr);
+	ServiceFactory(boost::asio::io_service& ios,const DNSDApi& dll)
+		:ioService(ios),dnsDll(dll)
+	{
+	}
+
+	~ServiceFactory()
+	{
+#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
+		createdServices.clear();
+#endif
+	}
+	bool	removeService(const boost::shared_ptr<void>& ptr)
+	{
+#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
+		return remove(ptr);
+#else
+		return false;
+#endif
+	}
 
 	 /**
      * @brief registerService
@@ -74,97 +133,7 @@ public:
 		const std::string& port,
 		const TxtRecordEncoder& txtRecord,
 		const LocalServiceEvtCallback& func,
-		BonjourError& err);
-
-    /**
-     * @brief createServiceBrower to discovery other service
-     * @param type  a ServiceType you looking for
-	 * @param domain    empty str will do
-	 * @param func can be NULL
-	 * @return NULL when failed
-     */
-	RemoteServicePtr	createServiceBrower(
-		const ServiceType& type,
-		const std::string& domain,
-		const RemoteServiceEvtCallback& func,
-		BonjourError& err);
-
-	/**
-     * @brief createServiceResolver to get  service's dns record 
-     * @param name  The name of the service instance to be resolved
-     * @param type  a ServiceType you looking for
-	 * @param domain    The domain of the service instance to be resolved
-	 * @param func can be NULL
-	 * @return NULL when failed
-     */
-	ServiceResolverPtr	createServiceResolver(
-		const std::string& name,
-		const ServiceType& type,
-		const std::string& domain,
-		const ServiceResolverEvtCallback& func,
-		BonjourError& err
-		);
-	ServiceResolverPtr	createServiceResolver(
-		const std::string& name,
-		const std::string& type,
-		const std::string& domain,
-		const ServiceResolverEvtCallback& func,
-		BonjourError& err
-		);
-
-	/**
-     * @brief createAddressResolver to resolve  address
-     * @param protocol  
-	 * @param hostname  
-	 * @param func can be NULL
-	 * @return NULL when failed
-     */
-	AddressResolverPtr	createAddressResolver(
-		ADDRESS_TYPE					protocol,
-		const std::string&              hostname,
-		const AddressResolverEvtCallback& func,
-		BonjourError& err
-		);
-	/**
-     * @brief Domain Enumeration
-     * @param interfaceIndex  can be 0(recommended),If non-zero, specifies the interface on which to look for domains
-	 * @param func can be NULL
-	 * @return NULL when failed
-     */
-	DomainEumeraterPtr	createDomainEumerater(
-		boost::uint32_t     interfaceIndex,
-		const EnumerationEvtCallback& func,
-		BonjourError& err
-		);
-
-};
-
-
-/************************************************************************
-//  Impl
-//  --------------------------------------------------------------------
-//                                                                  
-************************************************************************/
-ServiceFactory::ServiceFactory(boost::asio::io_service& ios,const DNSDApi &dll)
-:ioService(ios),dnsDll(dll)
-{
-}
-
-ServiceFactory::~ServiceFactory()
-{
-#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
-	createdServices.clear();
-#endif
-}
-LocalServicePtr ServiceFactory::registerService(
-	const std::string& name,
-	const ServiceType& type,
-	const std::string& domain,
-	const std::string& host,
-	const std::string& port,
-	const TxtRecordEncoder& txtRecord,
-	const LocalServiceEvtCallback& func,
-	BonjourError& err)
+		BonjourError& err)
 {
 	/************************************************************************
 	* flags:           Indicates the renaming behavior on name conflict (most applications
@@ -199,44 +168,72 @@ LocalServicePtr ServiceFactory::registerService(
 	}
 	return service;
 }
-RemoteServicePtr	ServiceFactory::createServiceBrower(
-	const ServiceType& type,
-	const std::string& domain,
-	const RemoteServiceEvtCallback& func,
-	BonjourError& err)
-{
-	/// flags:           Currently ignored, reserved for future use.
 
-	RemoteServicePtr service(new RemoteService(ioService,dnsDll,func));
-	DNSServiceFlags flags=0;
-	boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
-	std::string     serviceType=type.toString();
-	DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceBrowse(
-		&service->getCoreContext()->getDNSServiceRef(),
-		flags,
-		interfaceIndex,
-		serviceType.c_str(),
-		(domain.length()==0)?NULL: domain.c_str(),
-		RemoteService::DNSServiceBrowseReplyCallback,
-		service.get());
-	err.reset(err_code);
-	if(!err){
-		hold(service);
-		service->getCoreContext()->startEventLoop(service);
-		TEST_NO_DANGLING_PTR(service);
-	}else{
-		service.reset();
+    /**
+     * @brief createServiceBrower to discovery other service
+     * @param type  a ServiceType you looking for
+	 * @param domain    empty str will do
+	 * @param func can be NULL
+	 * @return NULL when failed
+     */
+	RemoteServicePtr	createServiceBrower(
+		const ServiceType& type,
+		const std::string& domain,
+		const RemoteServiceEvtCallback& func,
+		BonjourError& err)
+	{
+		/// flags:           Currently ignored, reserved for future use.
+
+		RemoteServicePtr service(new RemoteService(ioService,dnsDll,func));
+		DNSServiceFlags flags=0;
+		boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
+		std::string     serviceType=type.toString();
+		DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceBrowse(
+			&service->getCoreContext()->getDNSServiceRef(),
+			flags,
+			interfaceIndex,
+			serviceType.c_str(),
+			(domain.length()==0)?NULL: domain.c_str(),
+			RemoteService::DNSServiceBrowseReplyCallback,
+			service.get());
+		err.reset(err_code);
+		if(!err){
+			hold(service);
+			service->getCoreContext()->startEventLoop(service);
+			TEST_NO_DANGLING_PTR(service);
+		}else{
+			service.reset();
+		}
+		return service;
 	}
-	return service;
-}
 
-ServiceResolverPtr	ServiceFactory::createServiceResolver(
-	const std::string& name,
-	const std::string& type,
-	const std::string& domain,
-	const ServiceResolverEvtCallback& func,
-	BonjourError& err
-	)
+	/**
+     * @brief createServiceResolver to get  service's dns record 
+     * @param name  The name of the service instance to be resolved
+     * @param type  a ServiceType you looking for
+	 * @param domain    The domain of the service instance to be resolved
+	 * @param func can be NULL
+	 * @return NULL when failed
+     */
+	ServiceResolverPtr	createServiceResolver(
+		const std::string& name,
+		const ServiceType& type,
+		const std::string& domain,
+		const ServiceResolverEvtCallback& func,
+		BonjourError& err
+		)
+	{
+		std::string     serviceType=type.toString();
+		ServiceResolverPtr ptr=createServiceResolver(name,serviceType,domain,func,err);
+		return ptr;
+	}
+	ServiceResolverPtr	createServiceResolver(
+		const std::string& name,
+		const std::string& type,
+		const std::string& domain,
+		const ServiceResolverEvtCallback& func,
+		BonjourError& err
+		)
 {
 	/************************************************************************
 	* flags:           Specifying kDNSServiceFlagsForceMulticast will cause query to be
@@ -265,24 +262,20 @@ ServiceResolverPtr	ServiceFactory::createServiceResolver(
 	}
 	return service;
 }
-ServiceResolverPtr	ServiceFactory::createServiceResolver(
-	const std::string& name,
-	const ServiceType& type,
-	const std::string& domain,
-	const ServiceResolverEvtCallback& func,
-	BonjourError& err
-	)
-{
-	std::string     serviceType=type.toString();
-	ServiceResolverPtr ptr=createServiceResolver(name,serviceType,domain,func,err);
-	return ptr;
-}
-AddressResolverPtr	ServiceFactory::createAddressResolver(
-	ADDRESS_TYPE					protocol,
-	const std::string&              hostname,
-	const AddressResolverEvtCallback& func,
-	BonjourError& err
-	)
+
+	/**
+     * @brief createAddressResolver to resolve  address
+     * @param protocol  
+	 * @param hostname  
+	 * @param func can be NULL
+	 * @return NULL when failed
+     */
+	AddressResolverPtr	createAddressResolver(
+		ADDRESS_TYPE					protocol,
+		const std::string&              hostname,
+		const AddressResolverEvtCallback& func,
+		BonjourError& err
+		)
 {
 	/************************************************************************
 	* flags:           kDNSServiceFlagsForceMulticast or kDNSServiceFlagsLongLivedQuery.
@@ -315,89 +308,44 @@ AddressResolverPtr	ServiceFactory::createAddressResolver(
 	}
 	return service;
 }
-DomainEumeraterPtr	ServiceFactory::createDomainEumerater(
-	boost::uint32_t     interfaceIndex,
-	const EnumerationEvtCallback& func,
-	BonjourError& err
-	)
-{
-	//flags:           Possible values are:
-	//                 kDNSServiceFlagsBrowseDomains to enumerate domains recommended for browsing.
-	//                 kDNSServiceFlagsRegistrationDomains to enumerate domains recommended for registration.
+	/**
+     * @brief Domain Enumeration
+     * @param interfaceIndex  can be 0(recommended),If non-zero, specifies the interface on which to look for domains
+	 * @param func can be NULL
+	 * @return NULL when failed
+     */
+	DomainEumeraterPtr	createDomainEumerater(
+		boost::uint32_t     interfaceIndex,
+		const EnumerationEvtCallback& func,
+		BonjourError& err
+		)
+	{
+		//flags:           Possible values are:
+		//                 kDNSServiceFlagsBrowseDomains to enumerate domains recommended for browsing.
+		//                 kDNSServiceFlagsRegistrationDomains to enumerate domains recommended for registration.
 
-	DomainEumeraterPtr service(new DomainEumerater(ioService,dnsDll,func));
-	DNSServiceFlags flags=kDNSServiceFlagsBrowseDomains;
-	//boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny; 
-	DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceEnumerateDomains (
-		&service->getCoreContext()->getDNSServiceRef(),
-		flags,
-		interfaceIndex,
-		DomainEumerater::DNSServiceDomainEnumReplyCallback,
-		service.get());
-	err.reset(err_code);
-	if(!err){
-		hold(service);
-		service->getCoreContext()->startEventLoop(service);
-		TEST_NO_DANGLING_PTR(service);
-	}else{
-		service.reset();
+		DomainEumeraterPtr service(new DomainEumerater(ioService,dnsDll,func));
+		DNSServiceFlags flags=kDNSServiceFlagsBrowseDomains;
+		//boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny; 
+		DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceEnumerateDomains (
+			&service->getCoreContext()->getDNSServiceRef(),
+			flags,
+			interfaceIndex,
+			DomainEumerater::DNSServiceDomainEnumReplyCallback,
+			service.get());
+		err.reset(err_code);
+		if(!err){
+			hold(service);
+			service->getCoreContext()->startEventLoop(service);
+			TEST_NO_DANGLING_PTR(service);
+		}else{
+			service.reset();
+		}
+		return service;
 	}
-	return service;
-}
-ServiceFactory::AnyPtrList::iterator	ServiceFactory::find(const ServiceFactory::AnyPtr& whatever)
-{
-#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
-	ServiceFactory::AnyPtrList::iterator it=createdServices.begin();
-	ServiceFactory::AnyPtrList::iterator over=createdServices.end();
-	while(it != over){
-		if(whatever.get() == (*it).get())
-			break;
-		++it;
-	}
-	return it;
-#else
-	return ServiceFactory::AnyPtrList::iterator();
-#endif
-}
-bool		ServiceFactory::hold(const ServiceFactory::AnyPtr& whatever)
-{
-#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
-	lock_type lock(mutex);
-	ServiceFactory::AnyPtrList::iterator found=find(whatever);
-	if(found == createdServices.end()){
-		createdServices.push_back(whatever);
-		return true;
-	}else{
-		return false;
-	}
-#else
-	return false;
 
-#endif
-}
-bool		ServiceFactory::remove(const ServiceFactory::AnyPtr& whatever)
-{
-#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
-	lock_type lock(mutex);
-	ServiceFactory::AnyPtrList::iterator found=find(whatever);
-	if(found == createdServices.end()){
-		return false;
-	}else{
-		createdServices.erase(found);
-		return true;
-	}
-#else
-	return false;
-#endif
-}
-bool	ServiceFactory::removeService(const boost::shared_ptr<void>& ptr)
-{
-#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
-	return remove(ptr);
-#else
-	return false;
-#endif
-}
+};
+
 
 }}
 #endif // BONJOUR_SERVICE_FACTORY_H
