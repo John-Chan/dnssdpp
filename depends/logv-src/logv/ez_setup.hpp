@@ -142,8 +142,8 @@ namespace logV{
 	class TxtLogCfg:public SimpleSeting
 	{
 	private:
-		std::string	log_archive_dir;
-		std::string	log_file_tmp_dir;
+		std::string	archive_log_path;
+		std::string	temp_log_path;
 		size_t		rotation_size_kb;
 		size_t		rotation_interval_sec;
 	private:
@@ -154,14 +154,23 @@ namespace logV{
 			setMsgFilter(def_filter);
 			setAsyncCommit(false);
 			setAsyncCommit(true);
-			log_archive_dir="";
+			archive_log_path="";
 
-			log_file_tmp_dir="";
+			temp_log_path="";
 			rotation_size_kb=4096;
 			rotation_interval_sec=60;
 		}
 
 	public:
+		/// return "" if cant get parent path
+		static std::string	get_parent_path(const std::string& path)
+		{
+			boost::system::error_code ec;
+			boost::filesystem::path pt(path);
+			if(pt.has_parent_path())
+				return pt.parent_path().string();
+			return "";
+		}
 		virtual void		put_setting(logging::settings& setts)
 		{
 			std::string logerName=uneque_name+"_File";
@@ -172,24 +181,14 @@ namespace logV{
 			setts["Sinks"][logerName]["AutoFlush"]=auto_flush;
 			setts["Sinks"][logerName]["Format"]=log_msg_fmt;
 
-			boost::system::error_code ec;
 			std::string tmp_log_name=uneque_name+"_%3N.log";
-			if(log_file_tmp_dir.length() >0){
-				boost::filesystem::path tmplog_path(log_file_tmp_dir);
-				if(boost::filesystem::is_directory(tmplog_path,ec) && boost::filesystem::exists(tmplog_path,ec)){
-					tmplog_path/= uneque_name+"_%3N.log";
-					tmp_log_name=tmplog_path.string();
-				}
+			if(temp_log_path.length() >0){
+				tmp_log_name=temp_log_path;
 			}
 			setts["Sinks"][logerName]["FileName"]=tmp_log_name;
 
-			if(log_archive_dir.length() > 0){
-				std::string archive_path_name="log";
-				boost::filesystem::path archive_path(log_archive_dir);
-				if(boost::filesystem::is_directory(archive_path,ec)){
-					archive_path_name=archive_path.string();
-				}
-				setts["Sinks"][logerName]["Target"]=archive_path_name;
+			if(archive_log_path.length() > 0){
+				setts["Sinks"][logerName]["Target"]=archive_log_path;
 				setts["Sinks"][logerName]["RotationSize"]=rotation_size_kb*1024;
 				setts["Sinks"][logerName]["RotationInterval"]=rotation_interval_sec;
 			}
@@ -211,13 +210,13 @@ namespace logV{
 		}
 
 		// return empty string means LogArchive disabled
-		const std::string&	getLogArchiveDir()const
+		const std::string&	getArchivePath()const
 		{
-			return log_archive_dir;
+			return archive_log_path;
 		}
-		const std::string&	getLogTmpDir()const
+		const std::string&	getTmpLogPath()const
 		{
-			return log_file_tmp_dir;
+			return temp_log_path;
 		}
 		size_t				getRotationSizeKB()const
 		{
@@ -228,41 +227,35 @@ namespace logV{
 			return rotation_interval_sec;
 		}
 
-		/// enable or disabled archive log  
-		/// a_asb_path is a EXISTS dir or file name(abs path)
-		/// if a_asb_path point to a file,logs save in it parent dir
-		/// if a_asb_path point to a dir,logs save in this dir
-		/// e.g. setLogArchive(argv[0])
-		void	setLogArchive(const std::string& a_asb_path)
+		bool	enableArchive(const std::string& dir_path,size_t RotationSizeKB=4096,size_t RotationIntervalSec=300 )
 		{
-			boost::system::error_code ec;
-			boost::filesystem::path store_path(a_asb_path);
-			if(boost::filesystem::exists(store_path,ec)){
-
-				if(boost::filesystem::is_regular_file(store_path,ec) && store_path.has_parent_path()){
-					store_path=store_path.parent_path();
-				}
-				if(boost::filesystem::is_directory(store_path,ec)  ){
-					log_file_tmp_dir=store_path.string();
-					boost::filesystem::path archive_path(store_path);
-					archive_path/="log";
-					boost::filesystem::create_directories(archive_path,ec);
-					log_archive_dir=archive_path.string();
+			if(dir_path.length() == 0 ){
+				archive_log_path="log";
+				temp_log_path=uneque_name+"_%3N.log";
+			}else{
+				boost::system::error_code ec;
+				boost::filesystem::path pt(dir_path);
+				bool is_exists=boost::filesystem::exists(pt,ec);
+				bool is_file=boost::filesystem::is_regular_file(pt,ec);
+				bool is_dir=boost::filesystem::is_directory(pt,ec);
+				if(is_dir && !ec){
+					boost::filesystem::path pt2(pt);
+					boost::filesystem::path pt3(pt);
+					pt2/=uneque_name+"_%3N.log";
+					pt3/="log";
+					temp_log_path=pt2.string();
+					archive_log_path=pt3.string();
+				}else{
+					archive_log_path="log";
+					temp_log_path=uneque_name+"_%3N.log";
 				}
 			}
+			rotation_size_kb=RotationSizeKB;
+			rotation_interval_sec=RotationIntervalSec;
 			
+			return true;
 		}
 
-		/// enable or disabled archive log  
-		/// archive_dir is a dir
-		/// tmp_dir is a EXISTS dir  
-		/// e.g.
-		/// archive_dir is empty,means disable archive log
-		void	setLogArchive(const std::string& archive_dir,const std::string& tmp_dir)
-		{
-			log_archive_dir=archive_dir;
-			log_file_tmp_dir=tmp_dir;
-		}
 		void				setRotationSizeKB(size_t v)
 		{
 			rotation_size_kb=v;
