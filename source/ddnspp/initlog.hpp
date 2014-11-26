@@ -25,8 +25,8 @@ namespace air{namespace loging {
 		if(!consolOnly){
 
 			logV::TxtLogCfg txtcfg(lv,unque_name);
-			txtcfg.enableArchive(txtcfg.get_parent_path(exe_name),1024,60 );
-			//txtcfg.setTempLogPath(exe_name);
+			//txtcfg.enableArchive(txtcfg.get_parent_path(exe_name),1024,60 );
+			txtcfg.setTmplogPath(txtcfg.get_parent_path(exe_name));
 			txtcfg.put_setting(setts);
 
 		}

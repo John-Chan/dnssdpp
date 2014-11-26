@@ -191,6 +191,7 @@ namespace logV{
 				setts["Sinks"][logerName]["Target"]=archive_log_path;
 				setts["Sinks"][logerName]["RotationSize"]=rotation_size_kb*1024;
 				setts["Sinks"][logerName]["RotationInterval"]=rotation_interval_sec;
+				setts["Sinks"][logerName]["ScanForFiles"]="Matching"; //# "All" or "Matching"
 			}
 		}
 		virtual void		reset_default()
@@ -227,6 +228,29 @@ namespace logV{
 			return rotation_interval_sec;
 		}
 
+		/// set dir to save temp log 
+		/// DONT call both setTmplogPath and enableArchive
+		bool	setTmplogPath(const std::string& dir_path)
+		{
+			archive_log_path="";
+			if(dir_path.length() == 0 ){
+				temp_log_path=uneque_name+"_%3N.log";
+			}else{
+				boost::system::error_code ec;
+				boost::filesystem::path pt(dir_path);
+				bool is_exists=boost::filesystem::exists(pt,ec);
+				bool is_file=boost::filesystem::is_regular_file(pt,ec);
+				bool is_dir=boost::filesystem::is_directory(pt,ec);
+				if(is_dir && !ec){
+					pt/=uneque_name+"_%3N.log";
+					temp_log_path=pt.string();
+				}else{
+					temp_log_path=uneque_name+"_%3N.log";
+				}
+			}
+			return true;
+		}
+		/// DONT call both setTmplogPath and enableArchive
 		bool	enableArchive(const std::string& dir_path,size_t RotationSizeKB=4096,size_t RotationIntervalSec=300 )
 		{
 			if(dir_path.length() == 0 ){
