@@ -1,25 +1,25 @@
 ﻿#ifndef BONJOUR_CORE_H__
 #define BONJOUR_CORE_H__
 
-
-#include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <logv/logv.hpp>
 
 #include <ddnspp/bonjourpp/dnsdapi.hpp>
 #include <ddnspp/bonjourpp/bonjourerror.hpp>
 
+#include <boost/bind.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 //#include <boost/thread/latch.hpp>
-#include <logv/logv.hpp>
 
 namespace air
 {
 namespace bonjour
 {
 
-class CoreContext:boost::noncopyable,public boost::enable_shared_from_this<CoreContext>
+class CoreContext:public boost::enable_shared_from_this<CoreContext>,boost::noncopyable
 {
 private:
     typedef		boost::weak_ptr<void>		AnyWeakPtr;
@@ -86,19 +86,22 @@ private:
 
         socketFD = serviceRef    ?  dnsDll.getFunctiontable().funcDNSServiceRefSockFD(serviceRef) : -1;
         if(socketFD == -1) {
-            LOG_ERROR<<"cant got socket FD form DNSServiceRef.";
+            LOG_ERR<<"cant got socket FD form DNSServiceRef.";
             return;
         }
         warpedSocket.reset(new boost::asio::ip::tcp::socket(strand.get_io_service()));
         boost::system::error_code ec;
         if(warpedSocket->assign(boost::asio::ip::tcp::v4(),socketFD,ec)) {
-            LOG_ERROR<<"assign socket FD to asio::socket fail."
+            LOG_ERR<<"assign socket FD to asio::socket fail."
                      <<"FD="<<socketFD
                      <<",err=  "<< ec.message();
         } else {
-            LOG_DEBUG<<"assign socket FD to asio::socket successfully."
-                     <<"FD="<<socketFD
-                     <<",start event loop";
+			{
+
+				LOG_DEBUG<<"assign socket FD to asio::socket successfully."
+					<<"FD="<<socketFD
+					<<",start event loop";
+			}
 
             if(useStrand) {
                 strand.post(boost::bind(&CoreContext::post_read,shared_from_this()));
@@ -116,10 +119,10 @@ private:
             return;
         }
         reading=true;
-        warpedSocket->async_read_some(boost::asio::null_buffers(),
-                                      boost::bind(&CoreContext::handle_read,
-                                              shared_from_this(),
-                                              boost::asio::placeholders::error));
+        warpedSocket->async_read_some(
+			boost::asio::null_buffers(),
+            boost::bind(&CoreContext::handle_read, shared_from_this(), boost::asio::placeholders::error)
+			);
     }
     void	handle_read(boost::system::error_code ec)
     {
@@ -128,7 +131,7 @@ private:
             if(stoped) {
                 LOG_DEBUG<< "stop evtloop";
             } else {
-                LOG_ERROR<<"  "<< ec.message();
+                LOG_ERR<<"  "<< ec.message();
             }
             return;
         }
@@ -157,7 +160,7 @@ private:
             err = dnsDll.getFunctiontable().funcDNSServiceProcessResult(serviceRef);
             air::bonjour::BonjourError warpedErr(err);
             if(warpedErr) {
-                LOG_ERROR<<"DNSServiceProcessResult failed ,error = "<< warpedErr.getMessage();
+                LOG_ERR<<"DNSServiceProcessResult failed ,error = "<< warpedErr.getMessage();
             } else {
                 LOG_DEBUG<< "DNSServiceProcessResult successfully";
                 if(!stoped) {
@@ -167,7 +170,7 @@ private:
                 }
             }
         } else {
-            LOG_ERROR<<"Event Processer has been dead somewhere";
+            LOG_ERR<<"Event Processer has been dead somewhere";
         }
         return keep_evt_loop;
     }

@@ -69,7 +69,7 @@ void	close_all(air::bonjour::ServiceFactory& fac,BonjourServiceBrowerPtrList& al
 int _tmain(int argc, _TCHAR* argv[])
 {
 	std::cout<< "init longing"<<std::endl;
-	air::loging::logingInit(false,"service-explorer",argv[0]);
+	//air::loging::logingInit(false,"service-explorer",argv[0]);
 
 	boost::asio::io_service ios;
 	std::cout<< "loading dnssd.dll"<<std::endl;

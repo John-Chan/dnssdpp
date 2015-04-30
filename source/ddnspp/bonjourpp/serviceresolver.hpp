@@ -106,7 +106,7 @@ namespace air{namespace bonjour {
 		if (moreData) return;*/
 
 		if(err){
-			LOG_ERROR<<err.getErrorCode()<<"," <<err.getMessage();
+			LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage();
 		}else{
 			LOG_INFO<<"DNSServiceResolve successful";
 			LOG_INFO<<"flags:"<< flags;
@@ -120,7 +120,7 @@ namespace air{namespace bonjour {
 			TxtRecordDecoder dc(core->getApiProvider(),txtRecord,txtLen);
 			err = dc.getAll(records);
 			if(err){
-				LOG_ERROR<<err.getErrorCode()<<"," <<err.getMessage();
+				LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage();
 			}else{
 				ConstRecordList::const_iterator it=records.begin();
 				ConstRecordList::const_iterator over=records.end();

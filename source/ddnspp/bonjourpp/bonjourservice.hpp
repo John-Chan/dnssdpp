@@ -107,9 +107,9 @@ private:
 
         if(err) {
             if(kDNSServiceErr_NameConflict == err.getErrorCode()) {
-                LOG_ERROR<<err.getErrorCode()<<"," <<err.getMessage()<<"(" <<name << "in use,choose another"<<")";
+                LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage()<<"(" <<name << "in use,choose another"<<")";
             } else {
-                LOG_ERROR<<err.getErrorCode()<<"," <<err.getMessage();
+                LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage();
             }
         } else {
 

@@ -21,12 +21,12 @@ air::bonjour::LocalServicePtr	makeService(boost::asio::io_service& ios,const air
 	air::bonjour::BonjourError err;
 	err = txtEncoder.putOrReplace(records);
 	if(err){
-		LOG_ERROR<<"txtEncoder.putOrReplace "<< err.getMessage()<<std::endl;
+		LOG_ERR<<"txtEncoder.putOrReplace "<< err.getMessage()<<std::endl;
 	}
 	//air::bonjour::LocalServicePtr ptr=fac.registerService(name,st,"local","sunnysce.local",port,txtEncoder,NULL,err);
 	air::bonjour::LocalServicePtr ptr=fac.registerService(name,st,"","",port,txtEncoder,NULL,err);
 	if(err){
-		LOG_ERROR<<"RegisterService "<< err.getMessage()<<std::endl;
+		LOG_ERR<<"RegisterService "<< err.getMessage()<<std::endl;
 	}
 	return ptr;
 }
@@ -39,7 +39,7 @@ void	list_all_srvtype()
 int _tmain(int argc, _TCHAR* argv[])
 {
 	std::cout<< "init longing"<<std::endl;
-	air::loging::logingInit(true,"service-reg",argv[0]);
+	//air::loging::logingInit(true,"service-reg",argv[0]);
 
 	boost::asio::io_service ios;
 	std::cout<< "loading dnssd.dll"<<std::endl;

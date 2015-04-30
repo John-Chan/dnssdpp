@@ -126,7 +126,7 @@ private:
             }
         }
         if(err) {
-            LOG_ERROR<<err.getErrorCode()<<"," <<err.getMessage();
+            LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage();
         } else {
             if (flags & kDNSServiceFlagsAdd) {
                 LOG_INFO<<"Addres added";
