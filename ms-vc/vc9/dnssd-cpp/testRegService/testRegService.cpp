@@ -5,7 +5,7 @@
 
 #include <ddnspp/dnssd.h>
 #include <ddnspp/initlog.hpp>
-#include <logv/logv.hpp>
+#include <ddnspp/logv/logv.hpp>
 #include <iostream>
 #include <boost/thread.hpp>
 // "vv=1 pw=0 srcvers=150.33 deviceid=00:0E:C6:F5:6B:46 features=0x100029ff model=AppleTV3,1 "

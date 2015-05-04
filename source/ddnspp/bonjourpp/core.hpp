@@ -1,7 +1,7 @@
 ﻿#ifndef BONJOUR_CORE_H__
 #define BONJOUR_CORE_H__
 
-#include <logv/logv.hpp>
+#include <ddnspp/logv/logv.hpp>
 
 #include <ddnspp/bonjourpp/dnsdapi.hpp>
 #include <ddnspp/bonjourpp/bonjourerror.hpp>

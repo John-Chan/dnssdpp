@@ -16,7 +16,7 @@
 #include <ddnspp/bonjourpp/servicetype.hpp>
 #include <ddnspp/bonjourpp/txtrecords.hpp>
 #include <ddnspp/common/endian.hpp>
-#include <logv/logv.hpp>
+#include <ddnspp/logv/logv.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/cstdint.hpp>
 

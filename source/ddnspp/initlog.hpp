@@ -1,7 +1,7 @@
 ﻿#ifndef AIRSERVER_INIT_FOR_LOGING_HPP__
 #define AIRSERVER_INIT_FOR_LOGING_HPP__
 #include <string>
-#include <logv/logv.hpp>
+#include <ddnspp/logv/logv.hpp>
 
 namespace air{namespace loging {
 

@@ -11,7 +11,7 @@
 #include <ddnspp/bonjourpp/core.hpp>
 #include <ddnspp/bonjourpp/bonjourerror.hpp>
 
-#include <logv/logv.hpp>
+#include <ddnspp/logv/logv.hpp>
 
 namespace air
 {

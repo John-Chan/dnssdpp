@@ -12,7 +12,7 @@
 #include <ddnspp/bonjourpp/bonjourerror.hpp>
 #include <ddnspp/bonjourpp/txtrecords.hpp>
 #include <ddnspp/common/endian.hpp>
-#include <logv/logv.hpp>
+#include <ddnspp/logv/logv.hpp>
 
 namespace air{namespace bonjour {
 

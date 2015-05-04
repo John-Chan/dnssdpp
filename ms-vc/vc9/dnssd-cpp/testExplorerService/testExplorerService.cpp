@@ -8,7 +8,7 @@
 #include <boost/bind.hpp>
 #include <ddnspp/dnssd.h>
 #include <ddnspp/initlog.hpp>
-#include <logv/logv.hpp>
+#include <ddnspp/logv/logv.hpp>
 #include <iostream>
 #include <boost/thread.hpp>
 #include <list>
