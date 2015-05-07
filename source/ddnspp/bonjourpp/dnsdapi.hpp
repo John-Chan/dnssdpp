@@ -51,6 +51,9 @@ typedef struct BonjourExports_ {
 
     /// Domain Enumeration
     FuncDNSServiceEnumerateDomains	funcDNSServiceEnumerateDomains;
+
+	/// NAT
+	FuncDNSServiceNATPortMappingCreate	funcDNSServiceNATPortMappingCreate;
 } BonjourExports;
 
 class DNSDApi
@@ -69,7 +72,8 @@ public:
                     haveServiceDiscoveryFuncs(test)			&&
                     haveRecordParsingFuncs(test)			&&
                     haveAddressResolveFuncs(test)			&&
-                    haveDomainEnumerationFuncs(test)
+                    haveDomainEnumerationFuncs(test)		&&
+					haveNatMappingFuncs(test)
                );
 
     }
@@ -111,7 +115,11 @@ public:
     static bool    DNSDApi::haveDomainEnumerationFuncs(const BonjourExports& test)
     {
         return (test.funcDNSServiceEnumerateDomains != NULL );
-    }
+	}
+	static bool    DNSDApi::haveNatMappingFuncs(const BonjourExports& test)
+	{
+		return (test.funcDNSServiceNATPortMappingCreate != NULL );
+	}
     DNSDApi(const std::string& bonjourDllPath)
         :dll(bonjourDllPath.c_str())
     {
@@ -132,7 +140,6 @@ public:
     //  DNSServiceConstructFullName
     //  DNSServiceCreateConnection
     //  DNSServiceGetProperty
-    //  DNSServiceNATPortMappingCreate
     //  DNSServiceQueryRecord
     //  DNSServiceReconfirmRecord
     //  DNSServiceRegisterRecord
@@ -169,6 +176,8 @@ public:
             exported.funcDNSServiceGetAddrInfo=dll.load_dll_func<FuncDNSServiceGetAddrInfo>("DNSServiceGetAddrInfo") ;
             ///
             exported.funcDNSServiceEnumerateDomains=dll.load_dll_func<FuncDNSServiceEnumerateDomains>("DNSServiceEnumerateDomains") ;
+			///
+			exported.funcDNSServiceNATPortMappingCreate=dll.load_dll_func<FuncDNSServiceNATPortMappingCreate>("DNSServiceNATPortMappingCreate") ;
 
         }
         return haveAll(exported);

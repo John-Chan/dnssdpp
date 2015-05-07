@@ -13,6 +13,9 @@
 #include <ddnspp/bonjourpp/serviceresolver.hpp>
 #include <ddnspp/bonjourpp/addressresolver.hpp>
 #include <ddnspp/bonjourpp/domianenumerater.hpp>
+#include <ddnspp/bonjourpp/natmaping.hpp>
+
+#include <ddnspp/bonjourpp/prototype.hpp>
 #include <ddnspp/bonjourpp/servicetype.hpp>
 #include <ddnspp/bonjourpp/txtrecords.hpp>
 #include <ddnspp/common/endian.hpp>
@@ -332,6 +335,57 @@ public:
 			flags,
 			interfaceIndex,
 			DomainEumerater::DNSServiceDomainEnumReplyCallback,
+			service.get());
+		err.reset(err_code);
+		if(!err){
+			hold(service);
+			service->getCoreContext()->startEventLoop(service);
+			TEST_NO_DANGLING_PTR(service);
+		}else{
+			service.reset();
+		}
+		return service;
+	}
+	
+	/**
+     * @brief NatMapping
+	 * @param interfaceIndex  can be 0(recommended),If non-zero, specifies the interface on which to look for domains
+	 * @param prototype 
+	 * @param internalPort The port number in network byte order on the local machine which is listening for packets
+	 * @param externalPort Pass 0 if you don't care which external port is chosen for you.
+	 * @param ttl  The requested renewal period of the NAT port mapping, in seconds.Most clients should pass 0 to use a system-wide default value
+	 * @param func can be NULL
+	 * @return NULL when failed
+	 * @note 
+	 *     - To just discover the NAT gateway's external IP address, pass zero for protocol, internalPort, externalPort and ttl.
+	 *     - The port mapping will be renewed indefinitely until the client process exits, or NatMappingService die
+     */
+	NatMappingServicePtr	createNatMappingService(
+		boost::uint32_t     interfaceIndex,
+		ProtoType			prototype,
+		boost::uint16_t     internalPort,
+		boost::uint16_t     externalPort,
+		boost::uint32_t     ttl,
+		const NatMapingEvtCallback& func,
+		BonjourError& err
+		)
+	{
+		//flags:          Currently ignored, reserved for future use.
+
+		NatMappingServicePtr service(new NatMappingService(ioService,dnsDll,func));
+		DNSServiceFlags flags=0;
+		//boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny; 
+		internalPort=air::common::as_be16(internalPort);
+		externalPort=air::common::as_be16(externalPort);
+		DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceNATPortMappingCreate (
+			&service->getCoreContext()->getDNSServiceRef(),
+			flags,
+			interfaceIndex,
+			(DNSServiceProtocol)(prototype.getVal()),
+			internalPort,
+			externalPort,
+			ttl,
+			NatMappingService::DNSServiceNATPortMappingReplyCallback,
 			service.get());
 		err.reset(err_code);
 		if(!err){
