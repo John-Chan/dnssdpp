@@ -5,6 +5,7 @@
 #include <muradin/base/bitmask.hpp>
 
 #include <string>
+#include <string.h>
 
 namespace air
 {
@@ -72,11 +73,16 @@ namespace air
 					return "TCP|UDP" ;
 				}else if(haveUdp()){
 					return "UDP" ;
-				}else if(haveUdp()){
+				}else if(haveTcp()){
 					return "TCP" ;
 				}else{
 					return "Empty" ;
 				}
+			}
+			std::string	toStringLong()const{
+				char buff[128]={0};
+				sprintf(buff,"0x%02X",getVal() );
+				return std::string(buff)+" - "+toString();
 			}
 		};
 	}

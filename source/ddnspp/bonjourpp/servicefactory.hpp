@@ -362,7 +362,7 @@ public:
      */
 	NatMappingServicePtr	createNatMappingService(
 		boost::uint32_t     interfaceIndex,
-		ProtoType			prototype,
+		const ProtoType&	prototype,
 		boost::uint16_t     internalPort,
 		boost::uint16_t     externalPort,
 		boost::uint32_t     ttl,
@@ -381,7 +381,8 @@ public:
 			&service->getCoreContext()->getDNSServiceRef(),
 			flags,
 			interfaceIndex,
-			(DNSServiceProtocol)(prototype.getVal()),
+			prototype.getVal(),
+			//kDNSServiceProtocol_UDP|kDNSServiceProtocol_TCP,
 			internalPort,
 			externalPort,
 			ttl,

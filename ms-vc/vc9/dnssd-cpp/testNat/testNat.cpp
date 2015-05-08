@@ -16,7 +16,6 @@
 int	run_test()
 {
 	std::cout<< "init longing"<<std::endl;
-	//air::loging::logingInit(false,"service-explorer",argv[0]);
 
 	boost::asio::io_service ios;
 	std::cout<< "loading dnssd.dll"<<std::endl;
@@ -28,36 +27,28 @@ int	run_test()
 	air::bonjour::BonjourError err;
 	air::bonjour::ServiceFactory fac(ios,dll);
 
-	/*
-	air::bonjour::ServiceTypeList all_type_tcp;
-	BonjourServiceBrowerPtrList all_srv;
-	listAllService(all_type_tcp);
 
-	air::bonjour::ServiceTypeList::const_iterator it=all_type_tcp.begin();
-	air::bonjour::ServiceTypeList::const_iterator over=all_type_tcp.end();
-
-	while (it != over){
-		air::bonjour::RemoteServicePtr srv=fac.createServiceBrower(*it,"local",boost::bind(&onFoundService,boost::ref(fac),_1,_2,_3,_4,_5,_6),err);
-		if(NULL == srv){
-			std::cout<< "createServiceBrower fail:"<< err.getMessage() <<std::endl;
-		}else{
-			all_srv.push_back(srv);
-		}
-		++it;
-	}
-	*/
-
-	//air::bonjour::ProtoType proto=air::bonjour::ProtoType::ProtoTypeALL();
+	air::bonjour::ProtoType proto=air::bonjour::ProtoType::ProtoTypeALL();
 	//air::bonjour::ProtoType proto=air::bonjour::ProtoType::ProtoTcpOnly();
-	air::bonjour::ProtoType proto=air::bonjour::ProtoType::ProtoUdpOnly();
-	unsigned short listen_port=65432;
-	unsigned int ttl_second=0;
+	//air::bonjour::ProtoType proto=air::bonjour::ProtoType::ProtoUdpOnly();
+
+	unsigned short internalPort=65432;
+	unsigned short externalPort=0;
+	unsigned int ttl_second=10;
 	/// 
+	{
+
+		LOG_INFO<<"createNatMappingService..." ;
+		LOG_INFO<<"para - proto:"<< proto.toStringLong();
+		LOG_INFO<<"para - internalPort:"<<internalPort;
+		LOG_INFO<<"para - externalPort:"<<externalPort;
+		LOG_INFO<<"para - ttl:"<<ttl_second;
+	}
 	air::bonjour::NatMappingServicePtr srv=fac.createNatMappingService(
 		0,
 		proto,
-		listen_port,
-		0,
+		internalPort,
+		externalPort,
 		ttl_second, 
 		NULL,
 		err);
@@ -70,11 +61,9 @@ int	run_test()
 	for (size_t i=0;i<thread_size;++i){
 		threads.add_thread(new boost::thread(boost::bind(&boost::asio::io_service::run,boost::ref(ios)) ));
 	}
-	//threads.add_thread(new boost::thread(boost::bind(&close_all,boost::ref(fac),boost::ref(all_srv)) ));
-
-	//close_all(fac,all_srv);
 
 	threads.join_all();
+	return 0;
 }
 int _tmain(int argc, _TCHAR* argv[])
 {

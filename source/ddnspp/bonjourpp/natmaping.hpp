@@ -134,14 +134,16 @@ private:
         if(err) {
             LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage();
         } else {
-            //LOG_INFO<<"flags:"<< flags;
+            LOG_INFO<<"flags:"<< flags;
 			LOG_INFO<<"interfaceIndex:"<< interfaceIndex;
 			LOG_INFO<<"internalPort:"<<internalPort;
-            LOG_INFO<<"protoType:"<< protoType.toString();
+			//LOG_INFO<<"protoType:"<< protoType.toString();
+			LOG_INFO<<"protoType:"<< protoType.toStringLong();
 			LOG_INFO<<"externalAddress:"<<warped_external_address.to_string();
 			LOG_INFO<<"externalPort:"<<externalPort;
             LOG_INFO<<"ttl:"<<ttl;
 			LOG_INFO<<"natStatus:"<<natStatus.toString();
+			//
         }
 
         if(evtCallback) {
