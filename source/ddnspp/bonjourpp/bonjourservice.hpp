@@ -25,11 +25,11 @@ typedef boost::function
 <
 void
 (
-    DNSServiceFlags,		/// _1 flags
-    BonjourError,			/// _2 error
-    std::string,			/// _3 service name
-    std::string,			/// _4 service type
-    std::string				/// _5 domian
+    DNSServiceFlags,					/// _1 flags
+    air::bonjour::BonjourError,			/// _2 error
+    std::string,						/// _3 service name
+    std::string,						/// _4 service type
+    std::string							/// _5 domian
 )
 >		LocalServiceEvtCallback;
 /// LocalService

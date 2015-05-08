@@ -25,12 +25,12 @@ typedef boost::function
 <
 void
 (
-    DNSServiceFlags,		/// _1 flags
-    boost::uint32_t,		/// _2 interfaceIndex
-    BonjourError,			/// _3 error
-    std::string,			/// _4 service name (for subsequent use in the ServiceResolver )
-    std::string,			/// _5 service type
-    std::string				/// _6 domian
+    DNSServiceFlags,					/// _1 flags
+    boost::uint32_t,					/// _2 interfaceIndex
+    air::bonjour::BonjourError,			/// _3 error
+    std::string,						/// _4 service name (for subsequent use in the ServiceResolver )
+    std::string,						/// _5 service type
+    std::string							/// _6 domian
 )
 >
 RemoteServiceEvtCallback;

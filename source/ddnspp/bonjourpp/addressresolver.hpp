@@ -29,7 +29,7 @@ void
 (
     DNSServiceFlags,			/// _1 flags
     boost::uint32_t,			/// _2 interfaceIndex
-    BonjourError,				/// _3 error
+    air::bonjour::BonjourError,	/// _3 error
     std::string,				/// _4 hostname the hostname that you ask for rsolve address
     boost::asio::ip::address,	/// _5 address	rsolved address
     boost::uint32_t				/// _6 TTL indicates how long the client may legitimately hold onto this result(address), in seconds.

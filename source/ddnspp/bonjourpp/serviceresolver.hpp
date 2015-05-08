@@ -24,13 +24,13 @@ namespace air{namespace bonjour {
 		<
 		void
 		(
-		DNSServiceFlags,		/// _1 flags
-		boost::uint32_t,		/// _2 interfaceIndex
-		BonjourError,			/// _3 error 
-		std::string,			/// _4 service name(fullname, format:<servicename>.<protocol>.<domain>) 
-		std::string,			/// _5 host 
-		boost::uint16_t,		/// _6 port
-		TxtRecordDecoderPtr		/// _7 TxtRecordDecoder (include a copy of dns record)
+		DNSServiceFlags,					/// _1 flags
+		boost::uint32_t,					/// _2 interfaceIndex
+		air::bonjour::BonjourError,			/// _3 error 
+		std::string,						/// _4 service name(fullname, format:<servicename>.<protocol>.<domain>) 
+		std::string,						/// _5 host 
+		boost::uint16_t,					/// _6 port
+		TxtRecordDecoderPtr					/// _7 TxtRecordDecoder (include a copy of dns record)
 		)
 		>		ServiceResolverEvtCallback;
 

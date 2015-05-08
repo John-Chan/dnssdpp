@@ -32,13 +32,13 @@ namespace air
 			(
 			DNSServiceFlags,			/// _1 flags,Currently unused, reserved for future use
 			boost::uint32_t,			/// _2 interfaceIndex
-			BonjourError,				/// _3 error
+			air::bonjour::BonjourError,	/// _3 error
 			boost::uint16_t,			/// _6 internal port
 			boost::asio::ip::address,	/// _4 external address
 			boost::uint16_t,			/// _5 external port,may be different than the requested port
-			ProtoType,					/// _6 protocol used for nat mapping
+			air::bonjour::ProtoType,	/// _6 protocol used for nat mapping
 			boost::uint32_t,			/// _7 TTL , in seconds.indicates The lifetime of the NAT port mapping created on the gateway.
-			NatStatus					/// _8 NatStatus ,used to check nat status if error==true
+			air::bonjour::NatStatus		/// _8 NatStatus ,used to check nat status if error==true
 			)
 			>		NatMapingEvtCallback;
 
