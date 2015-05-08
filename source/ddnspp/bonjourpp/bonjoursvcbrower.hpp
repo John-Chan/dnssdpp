@@ -5,7 +5,8 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/function.hpp>
+
+#include <ddnspp/bonjourpp/dnsd_callback.hpp>		/// callback func def
 
 #include <ddnspp/bonjourpp/dnsdapi.hpp>
 #include <ddnspp/bonjourpp/core.hpp>
@@ -20,20 +21,6 @@ namespace bonjour
 
 class ServiceFactory;
 
-/// Event callback
-typedef boost::function
-<
-void
-(
-    DNSServiceFlags,					/// _1 flags
-    boost::uint32_t,					/// _2 interfaceIndex
-    air::bonjour::BonjourError,			/// _3 error
-    std::string,						/// _4 service name (for subsequent use in the ServiceResolver )
-    std::string,						/// _5 service type
-    std::string							/// _6 domian
-)
->
-RemoteServiceEvtCallback;
 
 /// RemoteService
 /// A service which is found from network(e.g. via ServiceFactory.createServiceBrower)

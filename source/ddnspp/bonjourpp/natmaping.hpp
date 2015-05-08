@@ -5,7 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/function.hpp>
+
 
 #include <ddnspp/bonjourpp/dnsdapi.hpp>
 #include <ddnspp/bonjourpp/core.hpp>
@@ -13,6 +13,7 @@
 #include <ddnspp/bonjourpp/servicetype.hpp>
 #include <ddnspp/bonjourpp/prototype.hpp>
 #include <ddnspp/bonjourpp/nat_status.hpp>
+#include <ddnspp/bonjourpp/dnsd_callback.hpp>		/// callback func def
 
 
 #include <ddnspp/logv/logv.hpp>
@@ -20,29 +21,11 @@
 
 namespace air
 {
-	namespace bonjour
-	{
+namespace bonjour
+{
 
-		class ServiceFactory;
+class ServiceFactory;
 
-		/// Event callback
-		typedef boost::function
-			<
-			void
-			(
-			DNSServiceFlags,			/// _1 flags,Currently unused, reserved for future use
-			boost::uint32_t,			/// _2 interfaceIndex
-			air::bonjour::BonjourError,	/// _3 error
-			boost::uint16_t,			/// _6 internal port
-			boost::asio::ip::address,	/// _4 external address
-			boost::uint16_t,			/// _5 external port,may be different than the requested port
-			air::bonjour::ProtoType,	/// _6 protocol used for nat mapping
-			boost::uint32_t,			/// _7 TTL , in seconds.indicates The lifetime of the NAT port mapping created on the gateway.
-			air::bonjour::NatStatus		/// _8 NatStatus ,used to check nat status if error==true
-			)
-			>		NatMapingEvtCallback;
-
-		
 /// NatService
 /// works for nat mapping
 class NatMappingService:boost::noncopyable,public boost::enable_shared_from_this<NatMappingService>
@@ -163,6 +146,6 @@ private:
 };
 typedef	boost::shared_ptr<NatMappingService>	NatMappingServicePtr;
 
-	}//namespace
+}//namespace
 }//namespace
 #endif//BONJOUR_NAT_MAPING_SERVICE_H

@@ -6,7 +6,8 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/function.hpp>
+
+#include <ddnspp/bonjourpp/dnsd_callback.hpp>		/// callback func def
 
 #include <ddnspp/bonjourpp/dnsdapi.hpp>
 #include <ddnspp/bonjourpp/core.hpp>
@@ -20,21 +21,6 @@ namespace bonjour
 {
 
 class ServiceFactory;
-
-/// Event callback
-/// @note   After the TTL expires, the client should consider the result no longer valid
-typedef boost::function
-<
-void
-(
-    DNSServiceFlags,			/// _1 flags
-    boost::uint32_t,			/// _2 interfaceIndex
-    air::bonjour::BonjourError,	/// _3 error
-    std::string,				/// _4 hostname the hostname that you ask for rsolve address
-    boost::asio::ip::address,	/// _5 address	rsolved address
-    boost::uint32_t				/// _6 TTL indicates how long the client may legitimately hold onto this result(address), in seconds.
-)
->		AddressResolverEvtCallback;
 
 
 /// AddressResolver

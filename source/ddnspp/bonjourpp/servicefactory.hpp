@@ -22,6 +22,7 @@
 #include <ddnspp/logv/logv.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/assert.hpp>
 
 #include <list>
 
@@ -31,6 +32,16 @@
 #define		TEST_NO_DANGLING_PTR(SHARED_PTR) do{ ; }while(0);
 namespace air{namespace bonjour {
 
+inline	void die_on_null(const void* ptr)
+{
+#ifdef _DEBUG
+	BOOST_ASSERT(NULL != ptr);
+#else
+	if(NULL == ptr){
+		::abort();
+	}
+#endif // _DEBUG
+}
 class ServiceFactory:boost::noncopyable
 {
 private:
@@ -147,6 +158,7 @@ public:
 	boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
 	std::string     serviceType=type.toString();
 	boost::uint16_t port_be= air::common::as_be16(boost::lexical_cast<boost::uint16_t>(port.c_str())) ;
+	die_on_null(dnsDll.getFunctiontable().funcDNSServiceRegister);
 	DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceRegister(
 		&service->getCoreContext()->getDNSServiceRef(),
 		flags,
@@ -191,6 +203,7 @@ public:
 		DNSServiceFlags flags=0;
 		boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
 		std::string     serviceType=type.toString();
+		die_on_null(dnsDll.getFunctiontable().funcDNSServiceBrowse);
 		DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceBrowse(
 			&service->getCoreContext()->getDNSServiceRef(),
 			flags,
@@ -212,14 +225,14 @@ public:
 
 	/**
      * @brief createServiceResolver to get  service's dns record 
-     * @param name  The name of the service instance to be resolved
+     * @param service_fullname  The full service domain name, in the form <servicename>.<protocol>.<domain>.
      * @param type  a ServiceType you looking for
 	 * @param domain    The domain of the service instance to be resolved
 	 * @param func can be NULL
 	 * @return NULL when failed
      */
 	ServiceResolverPtr	createServiceResolver(
-		const std::string& name,
+		const std::string& service_fullname,
 		const ServiceType& type,
 		const std::string& domain,
 		const ServiceResolverEvtCallback& func,
@@ -227,11 +240,11 @@ public:
 		)
 	{
 		std::string     serviceType=type.toString();
-		ServiceResolverPtr ptr=createServiceResolver(name,serviceType,domain,func,err);
+		ServiceResolverPtr ptr=createServiceResolver(service_fullname,serviceType,domain,func,err);
 		return ptr;
 	}
 	ServiceResolverPtr	createServiceResolver(
-		const std::string& name,
+		const std::string& service_fullname,
 		const std::string& type,
 		const std::string& domain,
 		const ServiceResolverEvtCallback& func,
@@ -246,11 +259,14 @@ public:
 	ServiceResolverPtr service(new ServiceResolver(ioService,dnsDll,func));
 	DNSServiceFlags flags=0;
 	boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
+
+	die_on_null(dnsDll.getFunctiontable().funcDNSServiceResolve);
+
 	DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceResolve(
 		&service->getCoreContext()->getDNSServiceRef(),
 		flags,
 		interfaceIndex,
-		name.c_str(),
+		service_fullname.c_str(),
 		type.c_str(),
 		(domain.length()==0)?NULL: domain.c_str(),
 		ServiceResolver::DNSServiceResolveReplyCallback,
@@ -293,6 +309,9 @@ public:
 	//DNSServiceFlags flags=kDNSServiceFlagsReturnIntermediates;
 	DNSServiceFlags flags=kDNSServiceFlagsLongLivedQuery;
 	boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
+
+	die_on_null(dnsDll.getFunctiontable().funcDNSServiceGetAddrInfo);
+
 	DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceGetAddrInfo(
 		&service->getCoreContext()->getDNSServiceRef(),
 		flags,
@@ -330,6 +349,9 @@ public:
 		DomainEumeraterPtr service(new DomainEumerater(ioService,dnsDll,func));
 		DNSServiceFlags flags=kDNSServiceFlagsBrowseDomains;
 		//boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny; 
+
+		die_on_null(dnsDll.getFunctiontable().funcDNSServiceEnumerateDomains);
+
 		DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceEnumerateDomains (
 			&service->getCoreContext()->getDNSServiceRef(),
 			flags,
@@ -377,6 +399,9 @@ public:
 		//boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny; 
 		internalPort=air::common::as_be16(internalPort);
 		externalPort=air::common::as_be16(externalPort);
+
+		die_on_null(dnsDll.getFunctiontable().funcDNSServiceNATPortMappingCreate);
+
 		DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceNATPortMappingCreate (
 			&service->getCoreContext()->getDNSServiceRef(),
 			flags,

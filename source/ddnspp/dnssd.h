@@ -10,7 +10,7 @@
 #include <ddnspp/bonjourpp/nat_status.hpp>
 #include <ddnspp/common/utf8string.hpp>
 
-/// worker
+///user no need to use the follow headers
 #include <ddnspp/bonjourpp/bonjourservice.hpp>		/// to publish a service
 #include <ddnspp/bonjourpp/bonjoursvcbrower.hpp>	/// to find a service
 #include <ddnspp/bonjourpp/serviceresolver.hpp>		/// get service information
@@ -18,8 +18,9 @@
 #include <ddnspp/bonjourpp/domianenumerater.hpp>	/// get domian information
 #include <ddnspp/bonjourpp/natmaping.hpp>			/// NAT mapping
 
-/// factory for workers
-#include <ddnspp/bonjourpp/servicefactory.hpp>
+/// the follow 2 header is useful for user
+#include <ddnspp/bonjourpp/servicefactory.hpp>		/// used to create a service to do something
+#include <ddnspp/bonjourpp/dnsd_callback.hpp>		/// callback func definition,used to receive event  
 
 
 

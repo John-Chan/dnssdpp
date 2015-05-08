@@ -5,7 +5,8 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <boost/function.hpp>
+
+#include <ddnspp/bonjourpp/dnsd_callback.hpp>		/// callback func def
 
 #include <ddnspp/bonjourpp/dnsdapi.hpp>
 #include <ddnspp/bonjourpp/core.hpp>
@@ -20,18 +21,7 @@ namespace bonjour
 
 class ServiceFactory;
 
-/// Event callback
-typedef boost::function
-<
-void
-(
-    DNSServiceFlags,					/// _1 flags
-    air::bonjour::BonjourError,			/// _2 error
-    std::string,						/// _3 service name
-    std::string,						/// _4 service type
-    std::string							/// _5 domian
-)
->		LocalServiceEvtCallback;
+
 /// LocalService
 /// A service which is published by yourself(e.g. via ServiceFactory.registerService)
 class LocalService:boost::noncopyable,public boost::enable_shared_from_this<LocalService>
