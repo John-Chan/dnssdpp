@@ -104,12 +104,12 @@ private:
         } else {
 
             if (flags & kDNSServiceFlagsAdd) {
-                LOG_INFO<<"DNSServiceRegister successful";
-                LOG_INFO<<"name:"<<name;
-                LOG_INFO<<"type:"<<regtype;
-                LOG_INFO<<"domain:"<<domain;
+                LOG_TRACE<<"DNSServiceRegister successful";
+                LOG_TRACE<<"name:"<<name;
+                LOG_TRACE<<"type:"<<regtype;
+                LOG_TRACE<<"domain:"<<domain;
             } else {
-                LOG_INFO<<name<<" removed";
+                LOG_TRACE<<name<<" removed";
             }
 
         }

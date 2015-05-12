@@ -94,13 +94,13 @@ namespace air{namespace bonjour {
 		if(err){
 			LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage();
 		}else{
-			LOG_INFO<<"DNSServiceResolve successful";
-			LOG_INFO<<"flags:"<< flags;
-			LOG_INFO<<"interfaceIndex:"<< interfaceIndex;
-			LOG_INFO<<"fullname:"<< fullname;
-			LOG_INFO<<"hosttarget:"<<hosttarget;
-			LOG_INFO<<"port:"<<air::common::as_be16(port);
-			LOG_INFO<<"txtLen:"<<txtLen;
+			LOG_TRACE<<"DNSServiceResolve successful";
+			LOG_TRACE<<"flags:"<< flags;
+			LOG_TRACE<<"interfaceIndex:"<< interfaceIndex;
+			LOG_TRACE<<"fullname:"<< fullname;
+			LOG_TRACE<<"hosttarget:"<<hosttarget;
+			LOG_TRACE<<"port:"<<air::common::as_be16(port);
+			LOG_TRACE<<"txtLen:"<<txtLen;
 
 			ConstRecordList records;
 			TxtRecordDecoder dc(core->getApiProvider(),txtRecord,txtLen);
@@ -111,7 +111,7 @@ namespace air{namespace bonjour {
 				ConstRecordList::const_iterator it=records.begin();
 				ConstRecordList::const_iterator over=records.end();
 				while(it != over){
-					LOG_INFO<< it->first<<"\t"<< it->second.allAsString() ;
+					LOG_TRACE<< it->first<<"\t"<< it->second.allAsString() ;
 					++it;
 				}
 			}

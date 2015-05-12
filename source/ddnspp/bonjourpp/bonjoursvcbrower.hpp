@@ -94,15 +94,15 @@ private:
         } else {
 
             if (flags & kDNSServiceFlagsAdd) {
-                LOG_INFO<<"DNSServiceBrowse found service";
-                LOG_INFO<<"flags:"<< flags;
-                LOG_INFO<<"interfaceIndex:"<< interfaceIndex;
-                LOG_INFO<<"serviceName:"<< serviceName;
-                LOG_INFO<<"regtype:"<<regtype;
-                LOG_INFO<<"replyDomain:"<<replyDomain;
+                LOG_TRACE<<"DNSServiceBrowse found service";
             } else {
-                LOG_INFO<<serviceName<<" removed";
-            }
+                LOG_TRACE<<serviceName<<" removed";
+			}
+			LOG_TRACE<<"flags:"<< flags;
+			LOG_TRACE<<"interfaceIndex:"<< interfaceIndex;
+			LOG_TRACE<<"serviceName:"<< serviceName;
+			LOG_TRACE<<"regtype:"<<regtype;
+			LOG_TRACE<<"replyDomain:"<<replyDomain;
         }
 
         if(evtCallback) {

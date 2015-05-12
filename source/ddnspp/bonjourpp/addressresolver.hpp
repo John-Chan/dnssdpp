@@ -115,15 +115,15 @@ private:
             LOG_ERR<<err.getErrorCode()<<"," <<err.getMessage();
         } else {
             if (flags & kDNSServiceFlagsAdd) {
-                LOG_INFO<<"Addres added";
+                LOG_TRACE<<"Addres added";
             } else {
-                LOG_INFO<<"Addres removed";
+                LOG_TRACE<<"Addres removed";
             }
-            LOG_INFO<<"flags:"<< flags;
-            LOG_INFO<<"interfaceIndex:"<< interfaceIndex;
-            LOG_INFO<<"hostname:"<< hostname;
-            LOG_INFO<<"address:"<<warped_address;
-            LOG_INFO<<"ttl:"<<ttl;
+            LOG_TRACE<<"flags:"<< flags;
+            LOG_TRACE<<"interfaceIndex:"<< interfaceIndex;
+            LOG_TRACE<<"hostname:"<< hostname;
+            LOG_TRACE<<"address:"<<warped_address;
+            LOG_TRACE<<"ttl:"<<ttl;
         }
         if(evtCallback) {
             evtCallback(

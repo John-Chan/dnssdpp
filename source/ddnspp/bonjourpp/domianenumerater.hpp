@@ -94,10 +94,10 @@ private:
         } else {
 
             if (flags & kDNSServiceFlagsAdd) {
-                LOG_INFO<<"Domain Enumeration found ";
-                LOG_INFO<<"flags:"<< flags;
-                LOG_INFO<<"interfaceIndex:"<< interfaceIndex;
-                LOG_INFO<<"replyDomain:"<< replyDomain;
+                LOG_TRACE<<"Domain Enumeration found ";
+                LOG_TRACE<<"flags:"<< flags;
+                LOG_TRACE<<"interfaceIndex:"<< interfaceIndex;
+                LOG_TRACE<<"replyDomain:"<< replyDomain;
             }
         }
 
