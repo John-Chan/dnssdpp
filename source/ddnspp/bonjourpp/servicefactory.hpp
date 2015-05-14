@@ -76,6 +76,17 @@ private:
 
 #endif
 	}
+	size_t		removeAll()
+	{
+#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
+		lock_type lock(mutex);
+		size_t count=createdServices.size();
+		createdServices.clear();
+		return count;
+#else
+		return 0;
+#endif
+	}
 	bool		remove(const ServiceFactory::AnyPtr& whatever)
 	{
 #if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
@@ -116,7 +127,7 @@ public:
 	~ServiceFactory()
 	{
 #if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
-		createdServices.clear();
+		removeAll();
 #endif
 	}
 	bool	removeService(const boost::shared_ptr<void>& ptr)
@@ -125,6 +136,15 @@ public:
 		return remove(ptr);
 #else
 		return false;
+#endif
+	}
+
+	size_t	removeAllService()
+	{
+#if ENABLE_SERVICEFACTORY_AUTO_HOLD_SERVICES
+		return removeAll();
+#else
+		return 0;
 #endif
 	}
 
