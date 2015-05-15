@@ -44,6 +44,11 @@ namespace air{namespace bonjour {
 			return core;
 		}
 
+		void	close()
+		{
+			core->close();
+		}
+
 		/// return old one
 		ServiceResolverEvtCallback				setEvtCallback(const ServiceResolverEvtCallback& func)
 		{

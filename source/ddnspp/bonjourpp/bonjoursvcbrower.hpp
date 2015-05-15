@@ -43,7 +43,12 @@ public:
     CoreContextPtr		getCoreContext()
     {
         return core;
-    }
+	}
+
+	void	close()
+	{
+		core->close();
+	}
 
     /// return old one
     RemoteServiceEvtCallback				setEvtCallback(const RemoteServiceEvtCallback& func)

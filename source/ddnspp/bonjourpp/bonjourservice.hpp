@@ -42,7 +42,12 @@ public:
     CoreContextPtr		getCoreContext()
     {
         return core;
-    }
+	}
+
+	void	close()
+	{
+		core->close();
+	}
 
     /// return old one
     LocalServiceEvtCallback				setEvtCallback(const LocalServiceEvtCallback& func)

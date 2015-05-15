@@ -50,6 +50,10 @@ public:
         return core;
     }
 
+	void	close()
+	{
+		core->close();
+	}
     /// return old one
     NatMapingEvtCallback				setEvtCallback(const NatMapingEvtCallback& func)
     {

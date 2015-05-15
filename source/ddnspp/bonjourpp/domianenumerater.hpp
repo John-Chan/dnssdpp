@@ -44,7 +44,12 @@ public:
     CoreContextPtr		getCoreContext()
     {
         return core;
-    }
+	}
+
+	void	close()
+	{
+		core->close();
+	}
 
     /// return old one
     EnumerationEvtCallback	setEvtCallback(const EnumerationEvtCallback& func)

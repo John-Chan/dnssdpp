@@ -34,6 +34,7 @@ void	onResolveService(air::bonjour::ServiceFactory& fac,
 	air::bonjour::AddressResolverPtr service;
 	/// must close it
 	fac.removeService(owner);
+	owner->close();
 	owner.reset();
 
 	if(!err){

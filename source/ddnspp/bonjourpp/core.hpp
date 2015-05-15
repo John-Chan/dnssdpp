@@ -129,7 +129,7 @@ private:
         reading=false;
         if(ec) {
             if(stoped) {
-                LOG_DEBUG<< "stop evtloop";
+                LOG_DEBUG<< "evtloop stoped";
             } else {
                 LOG_ERR<<"  "<< ec.message();
             }
@@ -166,7 +166,7 @@ private:
                 if(!stoped) {
                     keep_evt_loop=true;
                 } else {
-                    LOG_DEBUG<< "stop evtloop";
+                    LOG_DEBUG<< "evtloop stoped";
                 }
             }
         } else {
