@@ -126,7 +126,8 @@ private:
             LOG_TRACE<<"ttl:"<<ttl;
         }
         if(evtCallback) {
-            evtCallback(
+			evtCallback(
+				shared_from_this(),
                 flags,
                 interfaceIndex,
                 err,

@@ -22,6 +22,7 @@ void	listAllService( air::bonjour::ServiceTypeList& list)
 }
 
 void	onResolveService(air::bonjour::ServiceFactory& fac,
+						 air::bonjour::ServiceResolverPtr owner,
 						 DNSServiceFlags falg,
 						 boost::uint32_t interfaceIndex,
 						 air::bonjour::BonjourError err,
@@ -31,6 +32,10 @@ void	onResolveService(air::bonjour::ServiceFactory& fac,
 						 air::bonjour::TxtRecordDecoderPtr ptr)
 {
 	air::bonjour::AddressResolverPtr service;
+	/// must close it
+	fac.removeService(owner);
+	owner.reset();
+
 	if(!err){
 		service=fac.createAddressResolver(air::bonjour::IP_V4,host,NULL,err);
 	}
@@ -39,6 +44,7 @@ void	onResolveService(air::bonjour::ServiceFactory& fac,
 	}
 }
 void	onFoundService(air::bonjour::ServiceFactory& fac,
+					   air::bonjour::RemoteServicePtr owner,
 					   DNSServiceFlags falg,
 					   boost::uint32_t interfaceIndex,
 					   air::bonjour::BonjourError err,
@@ -49,7 +55,7 @@ void	onFoundService(air::bonjour::ServiceFactory& fac,
 	//air::bonjour::ServiceResolverPtr rolser=fac.createServiceResolver(name,type,domain,err);
 	air::bonjour::ServiceResolverPtr rolser;
 	if(!err){
-		rolser=fac.createServiceResolver(name,type,domain,boost::bind(&onResolveService,boost::ref(fac),_1,_2,_3,_4,_5,_6,_7),err);
+		rolser=fac.createServiceResolver(name,type,domain,boost::bind(&onResolveService,boost::ref(fac),_1,_2,_3,_4,_5,_6,_7,_8),err);
 	}
 	if(err){
 		std::cout<< "createServiceResolver fail:"<< err.getMessage() <<std::endl;
@@ -90,7 +96,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	while (it != over){
 		//air::bonjour::RemoteServicePtr srv=fac.createServiceBrower(*it,"local",err);
-		air::bonjour::RemoteServicePtr srv=fac.createServiceBrower(*it,"local",boost::bind(&onFoundService,boost::ref(fac),_1,_2,_3,_4,_5,_6),err);
+		air::bonjour::RemoteServicePtr srv=fac.createServiceBrower(*it,"local",boost::bind(&onFoundService,boost::ref(fac),_1,_2,_3,_4,_5,_6,_7),err);
 		if(NULL == srv){
 			std::cout<< "createServiceBrower fail:"<< err.getMessage() <<std::endl;
 		}else{

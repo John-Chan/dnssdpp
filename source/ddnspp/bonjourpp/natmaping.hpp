@@ -131,6 +131,7 @@ private:
 
         if(evtCallback) {
             evtCallback(
+				shared_from_this(),
                 flags,
                 interfaceIndex,
                 err,

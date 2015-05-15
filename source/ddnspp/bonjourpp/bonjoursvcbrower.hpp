@@ -106,7 +106,8 @@ private:
         }
 
         if(evtCallback) {
-            evtCallback(
+			evtCallback(
+				shared_from_this(),
                 flags,
                 interfaceIndex,
                 err,

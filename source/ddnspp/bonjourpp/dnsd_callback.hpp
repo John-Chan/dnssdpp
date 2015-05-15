@@ -8,10 +8,17 @@
 #include <ddnspp/bonjourpp/txtrecords.hpp>
 #include <ddnspp/bonjourpp/prototype.hpp>
 #include <ddnspp/bonjourpp/nat_status.hpp>
+#include <boost/shared_ptr.hpp>
 
 
 namespace air{namespace bonjour {
 
+	class NatMappingService;
+	class DomainEumerater;
+	class AddressResolver;
+	class ServiceResolver;
+	class RemoteService;
+	class LocalService;
 	
 
 	/// Event callback  for air::bonjour::DomainEumerater
@@ -51,10 +58,11 @@ namespace air{namespace bonjour {
 		<
 		void
 		(
-		DNSServiceFlags,					/// _1 flags
-		boost::uint32_t,					/// _2 interfaceIndex
-		air::bonjour::BonjourError,			/// _3 error
-		std::string							/// _4 replyDomain
+		boost::shared_ptr<air::bonjour::DomainEumerater>,	/// _1 the owner service  
+		DNSServiceFlags,					/// _2 flags
+		boost::uint32_t,					/// _3 interfaceIndex
+		air::bonjour::BonjourError,			/// _4 error
+		std::string							/// _5 replyDomain
 		)
 		>
 		EnumerationEvtCallback;
@@ -97,11 +105,12 @@ namespace air{namespace bonjour {
 		<
 		void
 		(
-		DNSServiceFlags,					/// _1 flags
-		air::bonjour::BonjourError,			/// _2 errorCode
-		std::string,						/// _3 service name
-		std::string,						/// _4 service type
-		std::string							/// _5 domian
+		boost::shared_ptr<air::bonjour::LocalService>,		/// _1 the owner service 
+		DNSServiceFlags,					/// _2 flags
+		air::bonjour::BonjourError,			/// _3 errorCode
+		std::string,						/// _4 service name
+		std::string,						/// _5 service type
+		std::string							/// _6 domian
 		)
 		>		LocalServiceEvtCallback;
 
@@ -144,12 +153,13 @@ namespace air{namespace bonjour {
 		<
 		void
 		(
-		DNSServiceFlags,					/// _1 flags
-		boost::uint32_t,					/// _2 interfaceIndex
-		air::bonjour::BonjourError,			/// _3 error
-		std::string,						/// _4 service name (for subsequent use in the ServiceResolver )
-		std::string,						/// _5 service type
-		std::string							/// _6 domian
+		boost::shared_ptr<air::bonjour::RemoteService>,		/// _1 the owner service 
+		DNSServiceFlags,					/// _2 flags
+		boost::uint32_t,					/// _3 interfaceIndex
+		air::bonjour::BonjourError,			/// _4 error
+		std::string,						/// _5 service name (for subsequent use in the ServiceResolver )
+		std::string,						/// _6 service type
+		std::string							/// _7 domian
 		)
 		>
 		RemoteServiceEvtCallback;
@@ -215,13 +225,14 @@ namespace air{namespace bonjour {
 		<
 		void
 		(
-		DNSServiceFlags,					/// _1 flags
-		boost::uint32_t,					/// _2 interfaceIndex
-		air::bonjour::BonjourError,			/// _3 error 
-		std::string,						/// _4 service name(fullname, format:<servicename>.<protocol>.<domain>) 
-		std::string,						/// _5 host name ,This name can  be passed to functions like gethostbyname() to identify the host's IP address.
-		boost::uint16_t,					/// _6 port
-		TxtRecordDecoderPtr					/// _7 TxtRecordDecoder (include a copy of dns record)
+		boost::shared_ptr<air::bonjour::ServiceResolver>,	/// _1 the owner service 
+		DNSServiceFlags,					/// _2 flags
+		boost::uint32_t,					/// _3 interfaceIndex
+		air::bonjour::BonjourError,			/// _4 error 
+		std::string,						/// _5 service name(fullname, format:<servicename>.<protocol>.<domain>) 
+		std::string,						/// _6 host name ,This name can  be passed to functions like gethostbyname() to identify the host's IP address.
+		boost::uint16_t,					/// _7 port
+		TxtRecordDecoderPtr					/// _8 TxtRecordDecoder (include a copy of dns record)
 		)
 		>		ServiceResolverEvtCallback;
 
@@ -262,15 +273,17 @@ namespace air{namespace bonjour {
 		<
 		void
 		(
-		DNSServiceFlags,			/// _1 flags
-		boost::uint32_t,			/// _2 interfaceIndex
-		air::bonjour::BonjourError,	/// _3 error
-		std::string,				/// _4 hostname the hostname that you ask for rsolve address
-		boost::asio::ip::address,	/// _5 address	rsolved address
-		boost::uint32_t				/// _6 TTL indicates how long the client may legitimately hold onto this result(address), in seconds.
+		boost::shared_ptr<air::bonjour::AddressResolver>,	/// _1 the owner service 
+		DNSServiceFlags,			/// _2 flags
+		boost::uint32_t,			/// _3 interfaceIndex
+		air::bonjour::BonjourError,	/// _4 error
+		std::string,				/// _5 hostname the hostname that you ask for rsolve address
+		boost::asio::ip::address,	/// _6 address	rsolved address
+		boost::uint32_t				/// _7 TTL indicates how long the client may legitimately hold onto this result(address), in seconds.
 		)
 		>		AddressResolverEvtCallback;
 
+	
 	/// Event callback  for air::bonjour::NatMappingService
 	/* 
 	 *
@@ -369,15 +382,16 @@ namespace air{namespace bonjour {
 		<
 		void
 		(
-		DNSServiceFlags,			/// _1 flags,Currently unused, reserved for future use
-		boost::uint32_t,			/// _2 interfaceIndex
-		air::bonjour::BonjourError,	/// _3 error
-		boost::uint16_t,			/// _6 internal port
-		boost::asio::ip::address,	/// _4 external address
-		boost::uint16_t,			/// _5 external port,may be different than the requested port
-		air::bonjour::ProtoType,	/// _6 protocol used for nat mapping
-		boost::uint32_t,			/// _7 TTL , in seconds.indicates The lifetime of the NAT port mapping created on the gateway.
-		air::bonjour::NatStatus		/// _8 NatStatus ,used to check nat status if error==true
+		boost::shared_ptr<air::bonjour::NatMappingService>,	/// _1 the owner service 
+		DNSServiceFlags,			/// _2 flags,Currently unused, reserved for future use
+		boost::uint32_t,			/// _3 interfaceIndex
+		air::bonjour::BonjourError,	/// _4 error
+		boost::uint16_t,			/// _5 internal port
+		boost::asio::ip::address,	/// _6 external address
+		boost::uint16_t,			/// _7 external port,may be different than the requested port
+		air::bonjour::ProtoType,	/// _8 protocol used for nat mapping
+		boost::uint32_t,			/// _9 TTL , in seconds.indicates The lifetime of the NAT port mapping created on the gateway.
+		air::bonjour::NatStatus		/// _10 NatStatus ,used to check nat status if error==true
 		)
 		>		NatMapingEvtCallback;
 
