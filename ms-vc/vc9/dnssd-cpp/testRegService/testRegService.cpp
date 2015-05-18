@@ -16,13 +16,15 @@ air::bonjour::LocalServicePtr	makeService(boost::asio::io_service& ios,const air
 	//  -R "My Test" _http._tcp . 80 path=/path-to-page.html
 	air::bonjour::ServiceFactory fac(ios,dll);
 	air::bonjour::ServiceType st(air::bonjour::SP_TCP,srv_type);
-	air::bonjour::TxtRecordEncoder txtEncoder(dll,20480);
-	
+	air::bonjour::TxtRecordEncoder txtEncoder(dll,5,true);
+	const char* old_ptr=txtEncoder.getRecordPtr();
 	air::bonjour::BonjourError err;
 	err = txtEncoder.putOrReplace(records);
 	if(err){
 		LOG_ERR<<"txtEncoder.putOrReplace "<< err.getMessage()<<std::endl;
 	}
+	size_t len=txtEncoder.getRecordLenth();
+	const char* new_ptr=txtEncoder.getRecordPtr();
 	//air::bonjour::LocalServicePtr ptr=fac.registerService(name,st,"local","sunnysce.local",port,txtEncoder,NULL,err);
 	air::bonjour::LocalServicePtr ptr=fac.registerService(name,st,"","",port,txtEncoder,NULL,err);
 	if(err){

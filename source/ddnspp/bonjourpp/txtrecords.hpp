@@ -33,11 +33,21 @@ public:
     {
         return 9;
     }
-    TxtRecordEncoder(const DNSDApi &dll,boost::uint16_t	maxBytes)
-        :dnsDll(dll),buffer(maxBytes)
+
+	/// the real buff size may lager than initSize after call putOrReplace and malloc() called 
+    TxtRecordEncoder(const DNSDApi &dll,boost::uint16_t	initSize,bool selfAlloc=false)
+        :dnsDll(dll),buffer(initSize)
     {
-        TXTRecordRef	txt_record= {0};
-        dnsDll.getFunctiontable().funcTXTRecordCreate(&recordHolder,(boost::uint16_t)buffer.bytes(),buffer.ptr());
+		/************************************************************************
+		//  If the buffer parameter is NULL, or the specified storage size is not
+		//  large enough to hold a key subsequently added using TXTRecordSetValue(),
+		//  then additional memory will be added as needed using malloc().                                                               
+		************************************************************************/
+		if(selfAlloc){
+			dnsDll.getFunctiontable().funcTXTRecordCreate(&recordHolder,(boost::uint16_t)buffer.bytes(),buffer.ptr());
+		}else{
+			dnsDll.getFunctiontable().funcTXTRecordCreate(&recordHolder,initSize,NULL);
+		}
     }
     ~TxtRecordEncoder()
     {
@@ -116,6 +126,8 @@ public:
         dnsDll.getFunctiontable().funcTXTRecordRemoveValue(&recordHolder,key.c_str());
     }
 
+	/// the pointer return from this call may change after call putOrReplace
+	/// because a malloc() may called
     const char*		getRecordPtr()const
     {
         return (const char*)dnsDll.getFunctiontable().funcTXTRecordGetBytesPtr(&recordHolder);

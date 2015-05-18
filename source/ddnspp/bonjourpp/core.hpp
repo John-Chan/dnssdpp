@@ -22,6 +22,7 @@ namespace bonjour
 class CoreContext:public boost::enable_shared_from_this<CoreContext>,boost::noncopyable
 {
 private:
+	enum{kInvaliedSocketFD=-1};
     typedef		boost::weak_ptr<void>		AnyWeakPtr;
     //typedef		boost::shared_ptr<void>		AnySharedPtr;
     typedef	boost::shared_ptr<boost::asio::ip::tcp::socket>	TcpSocketPtr;
@@ -40,7 +41,7 @@ private:
     bool			reading;
 public:
     CoreContext(boost::asio::io_service& ios,const DNSDApi& dll,bool	strandExecHandler=true)
-        :strand(ios), useStrand(strandExecHandler),dnsDll(dll),serviceRef(NULL),stoped(false),evtTimeoutSecond(2),socketFD(-1),reading(false)
+        :strand(ios), useStrand(strandExecHandler),dnsDll(dll),serviceRef(NULL),stoped(false),evtTimeoutSecond(2),socketFD(kInvaliedSocketFD),reading(false)
     {
         //
     }
@@ -65,7 +66,7 @@ public:
     /// CoreContext hold evtProcesser's weak_ptr to avoid run event call back after  evtProcesser dead
     void	startEventLoop(const boost::weak_ptr<void>&	evtProcesser)
     {
-        if(socketFD == -1) {
+        if(socketFD == kInvaliedSocketFD) {
             obPtr=evtProcesser;
             stoped=false;
             run();
@@ -75,15 +76,23 @@ public:
     void	close()
     {
 		if(!stoped){
-			if(warpedSocket){
-				// must clear assigned native socket handle
-				// call  DNSServiceRefSockFD after a DNSServiceRefDeallocate call may got same one(same socket number)
-				warpedSocket.reset();
-			}
 			if(serviceRef!=NULL) {
 				LOG_DEBUG<<"DNSServiceRefDeallocate"<<",FD="<<socketFD<<",serviceRef="<<serviceRef;
 				dnsDll.getFunctiontable().funcDNSServiceRefDeallocate(serviceRef);
 				serviceRef=NULL;
+				socketFD=kInvaliedSocketFD;
+			}
+			if(warpedSocket){
+				// must clear assigned native socket handle
+				// call  DNSServiceRefSockFD after a DNSServiceRefDeallocate call may got same one(same socket number)
+				
+				//warpedSocket.reset();
+
+				boost::system::error_code ignore_ec;
+				warpedSocket->close(ignore_ec);
+				/*if(ec) {
+					LOG_ERR<<"close socket FD  fail." <<"err=  "<< ec.message();
+				}*/
 			}
 		}
 		stoped=true;
@@ -93,8 +102,8 @@ private:
     void	run()
     {
 
-        socketFD = (serviceRef )? (dnsDll.getFunctiontable().funcDNSServiceRefSockFD(serviceRef))  : (-1);
-        if(socketFD == -1) {
+        socketFD = (serviceRef )? (dnsDll.getFunctiontable().funcDNSServiceRefSockFD(serviceRef))  : (kInvaliedSocketFD);
+        if(socketFD == kInvaliedSocketFD) {
             LOG_ERR<<"cant got socket FD form DNSServiceRef.";
             return;
         }
