@@ -74,17 +74,26 @@ public:
 
     void	close()
     {
-        stoped=true;
-        if(serviceRef!=NULL) {
-            dnsDll.getFunctiontable().funcDNSServiceRefDeallocate(serviceRef);
-        }
-        serviceRef=NULL;
+		if(!stoped){
+			if(warpedSocket){
+				// must clear assigned native socket handle
+				// call  DNSServiceRefSockFD after a DNSServiceRefDeallocate call may got same one(same socket number)
+				warpedSocket.reset();
+			}
+			if(serviceRef!=NULL) {
+				LOG_DEBUG<<"DNSServiceRefDeallocate"<<",FD="<<socketFD<<",serviceRef="<<serviceRef;
+				dnsDll.getFunctiontable().funcDNSServiceRefDeallocate(serviceRef);
+				serviceRef=NULL;
+			}
+		}
+		stoped=true;
     }
 private:
+
     void	run()
     {
 
-        socketFD = serviceRef    ?  dnsDll.getFunctiontable().funcDNSServiceRefSockFD(serviceRef) : -1;
+        socketFD = (serviceRef )? (dnsDll.getFunctiontable().funcDNSServiceRefSockFD(serviceRef))  : (-1);
         if(socketFD == -1) {
             LOG_ERR<<"cant got socket FD form DNSServiceRef.";
             return;
@@ -93,13 +102,14 @@ private:
         boost::system::error_code ec;
         if(warpedSocket->assign(boost::asio::ip::tcp::v4(),socketFD,ec)) {
             LOG_ERR<<"assign socket FD to asio::socket fail."
-                     <<"FD="<<socketFD
-                     <<",err=  "<< ec.message();
+				<<"FD="<<socketFD
+				<<",serviceRef="<<serviceRef
+                <<",err=  "<< ec.message();
         } else {
 			{
-
 				LOG_DEBUG<<"assign socket FD to asio::socket successfully."
 					<<"FD="<<socketFD
+					<<",serviceRef="<<serviceRef
 					<<",start event loop";
 			}
 
@@ -129,13 +139,13 @@ private:
         reading=false;
         if(ec) {
             if(stoped) {
-                LOG_DEBUG<< "evtloop stoped";
+				LOG_DEBUG<< "evtloop stoped"<<",FD="<<socketFD<<",serviceRef="<<serviceRef;
             } else {
-                LOG_ERR<<"  "<< ec.message();
+                LOG_ERR<<"  "<< ec.message()<<",FD="<<socketFD<<",serviceRef="<<serviceRef;
             }
             return;
         }
-        if(process_read_data()) {
+        if(process_read_data() && !stoped) {
             if(useStrand) {
                 strand.post(boost::bind(&CoreContext::post_read,shared_from_this()));
             } else {
@@ -156,19 +166,33 @@ private:
         /// pass back the context parameter,if that service was dead before calling callback function,  context
         /// is a dangling pointer.
         if(!obPtr.expired()) {
-            DNSServiceErrorType err = kDNSServiceErr_NoError;
-            err = dnsDll.getFunctiontable().funcDNSServiceProcessResult(serviceRef);
-            air::bonjour::BonjourError warpedErr(err);
-            if(warpedErr) {
-                LOG_ERR<<"DNSServiceProcessResult failed ,error = "<< warpedErr.getMessage();
-            } else {
-                LOG_DEBUG<< "DNSServiceProcessResult successfully";
-                if(!stoped) {
-                    keep_evt_loop=true;
-                } else {
-                    LOG_DEBUG<< "evtloop stoped";
-                }
-            }
+			if (!stoped){
+				DNSServiceErrorType err = kDNSServiceErr_NoError;
+				err = dnsDll.getFunctiontable().funcDNSServiceProcessResult(serviceRef);
+				air::bonjour::BonjourError warpedErr(err);
+				if(warpedErr) {
+					LOG_ERR<<"DNSServiceProcessResult failed ,error = "<< warpedErr.getMessage();
+				} else {
+					LOG_DEBUG<< "DNSServiceProcessResult successfully";
+					keep_evt_loop=true;
+				}
+			}else{
+				LOG_DEBUG<< "evtloop stoped";
+			}
+			//////
+			/*DNSServiceErrorType err = kDNSServiceErr_NoError;
+			err = dnsDll.getFunctiontable().funcDNSServiceProcessResult(serviceRef);
+			air::bonjour::BonjourError warpedErr(err);
+			if(warpedErr) {
+				LOG_ERR<<"DNSServiceProcessResult failed ,error = "<< warpedErr.getMessage();
+			} else {
+				LOG_DEBUG<< "DNSServiceProcessResult successfully";
+				if(!stoped) {
+					keep_evt_loop=true;
+				} else {
+					LOG_DEBUG<< "evtloop stoped";
+				}
+			}*/
         } else {
             LOG_ERR<<"Event Processer has been dead somewhere";
         }

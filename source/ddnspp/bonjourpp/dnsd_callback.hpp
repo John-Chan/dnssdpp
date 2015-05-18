@@ -52,6 +52,7 @@ namespace air{namespace bonjour {
 	 *
 	 * replyDomain:     The name of the domain.
 	 *
+	 * @note The enumeration MUST be cancelled via DomainEumeraterPtr->close() when no more domains  are to be found.
 	 *
 	 */
 	typedef boost::function
@@ -147,6 +148,7 @@ namespace air{namespace bonjour {
 	 *                  discovered service instance should be stored along with the name, so that
 	 *                  it can be passed to DNSServiceResolve() when the service is later resolved.
 	 *
+	 * @note When the desired results have been returned, the client MUST terminate the resolve by calling ServiceResolverPtr->close() 
 	 *
 	 */
 	typedef boost::function

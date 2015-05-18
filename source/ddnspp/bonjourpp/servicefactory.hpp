@@ -173,6 +173,9 @@ public:
 	* flags:           Indicates the renaming behavior on name conflict (most applications
 	*                  will pass 0).                                                    
 	************************************************************************/
+
+	LOG_DEBUG<<"create LocalService";
+
 	LocalServicePtr service(new LocalService(ioService,dnsDll,func));
 	DNSServiceFlags flags=0;
 	boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
@@ -217,6 +220,7 @@ public:
 		const RemoteServiceEvtCallback& func,
 		BonjourError& err)
 	{
+		LOG_DEBUG<<"create RemoteService";
 		/// flags:           Currently ignored, reserved for future use.
 
 		RemoteServicePtr service(new RemoteService(ioService,dnsDll,func));
@@ -250,6 +254,7 @@ public:
 	 * @param domain    The domain of the service instance to be resolved
 	 * @param func can be NULL
 	 * @return NULL when failed
+	 * @note When the desired results have been returned, the client MUST terminate the resolve by calling ServiceResolverPtr->close() 
      */
 	ServiceResolverPtr	createServiceResolver(
 		const std::string& service_fullname,
@@ -276,6 +281,9 @@ public:
 	*                  performed with a link-local mDNS query, even if the name is an
 	*                  apparently non-local name (i.e. a name not ending in ".local.")                                                          
 	************************************************************************/
+
+	LOG_DEBUG<<"create ServiceResolver";
+
 	ServiceResolverPtr service(new ServiceResolver(ioService,dnsDll,func));
 	DNSServiceFlags flags=0;
 	boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
@@ -325,6 +333,9 @@ public:
 	*                  events) that become available after the initial call is made will generate
 	*                  callbacks. This flag has no effect on link-local multicast queries.                                                                  
 	************************************************************************/
+
+	LOG_DEBUG<<"create AddressResolver";
+
 	AddressResolverPtr service(new AddressResolver(ioService,dnsDll,func));
 	//DNSServiceFlags flags=kDNSServiceFlagsReturnIntermediates;
 	DNSServiceFlags flags=kDNSServiceFlagsLongLivedQuery;
@@ -355,6 +366,7 @@ public:
      * @param interfaceIndex  can be 0(recommended),If non-zero, specifies the interface on which to look for domains
 	 * @param func can be NULL
 	 * @return NULL when failed
+	 * @note The enumeration MUST be cancelled via DomainEumeraterPtr->close() when no more domains  are to be found.
      */
 	DomainEumeraterPtr	createDomainEumerater(
 		boost::uint32_t     interfaceIndex,
@@ -365,6 +377,8 @@ public:
 		//flags:           Possible values are:
 		//                 kDNSServiceFlagsBrowseDomains to enumerate domains recommended for browsing.
 		//                 kDNSServiceFlagsRegistrationDomains to enumerate domains recommended for registration.
+
+		LOG_DEBUG<<"create DomainEumerater";
 
 		DomainEumeraterPtr service(new DomainEumerater(ioService,dnsDll,func));
 		DNSServiceFlags flags=kDNSServiceFlagsBrowseDomains;
@@ -413,6 +427,8 @@ public:
 		)
 	{
 		//flags:          Currently ignored, reserved for future use.
+
+		LOG_DEBUG<<"create NatMappingService";
 
 		NatMappingServicePtr service(new NatMappingService(ioService,dnsDll,func));
 		DNSServiceFlags flags=0;

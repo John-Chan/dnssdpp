@@ -18,9 +18,31 @@ typedef std::list<air::bonjour::RemoteServicePtr>	BonjourServiceBrowerPtrList;
 
 void	listAllService( air::bonjour::ServiceTypeList& list)
 {
+
+	//"_exec._tcp",
+	//air::bonjour::ServiceType st(air::bonjour::SP_TCP, "_exec");
+	//list.push_back(st);
 	air::bonjour::ServiceTypePraser::allWellkonwServiceTypeList(list);
 }
-
+void	onResolveAddress
+(
+ air::bonjour::ServiceFactory& fac,
+ air::bonjour::AddressResolverPtr owner,
+ DNSServiceFlags flags,
+ boost::uint32_t interfaceIndex,
+ air::bonjour::BonjourError err,
+ std::string hostname,		//hostname the hostname that you ask for rsolve address
+ boost::asio::ip::address address,
+ boost::uint32_t ttl
+ )
+{
+	if(err){
+		std::cout<< "onResolveAddress fail:"<< err.getMessage() <<std::endl;
+	}else{
+		std::cout<< "onResolveAddress success:"<<  hostname << " <= "<<address.to_string() <<std::endl;
+	}
+	//
+}
 void	onResolveService(air::bonjour::ServiceFactory& fac,
 						 air::bonjour::ServiceResolverPtr owner,
 						 DNSServiceFlags falg,
@@ -32,13 +54,18 @@ void	onResolveService(air::bonjour::ServiceFactory& fac,
 						 air::bonjour::TxtRecordDecoderPtr ptr)
 {
 	air::bonjour::AddressResolverPtr service;
-	/// must close it
+
+	/// must close it or you got xxx alive 2 minutes error in windows event manager
 	fac.removeService(owner);
 	owner->close();
 	owner.reset();
-
 	if(!err){
-		service=fac.createAddressResolver(air::bonjour::IP_V4,host,NULL,err);
+		//service=fac.createAddressResolver(air::bonjour::IP_V4,host,NULL,err);
+		service=fac.createAddressResolver(
+			air::bonjour::IP_V4,
+			host,
+			boost::bind(&onResolveAddress, boost::ref(fac), _1, _2, _3, _4, _5, _6,_7),
+			err);
 	}
 	if(err){
 		std::cout<< "createAddressResolver fail:"<< err.getMessage() <<std::endl;
@@ -75,6 +102,8 @@ void	close_all(air::bonjour::ServiceFactory& fac,BonjourServiceBrowerPtrList& al
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
+	//muradin::loger_v2::setGlobalLogLvl(muradin::loger_v2::LOG_LVL::LOG_LVL_TRACE);
+	//muradin::loger_v2::setGlobalLogLvl(muradin::loger_v2::LOG_LVL_TRACE);
 	std::cout<< "init longing"<<std::endl;
 	//air::loging::logingInit(false,"service-explorer",argv[0]);
 
