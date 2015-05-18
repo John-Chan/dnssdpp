@@ -131,15 +131,17 @@ private:
             LOG_TRACE<<"ttl:"<<ttl;
         }
         if(evtCallback) {
-			evtCallback(
-				shared_from_this(),
-                flags,
-                interfaceIndex,
-                err,
-                hostname,
-                warped_address,
-                ttl
-            );
+			air::bonjour::AddressResolveData	data;
+			data.addr			=	warped_address;
+			data.error			=	err;
+			data.flags			=	flags;
+			data.hostName		=	hostname;
+			data.interfaceIndex	=	interfaceIndex;
+			data.ttl			=	ttl;
+			data.owner			=	shared_from_this();
+
+			evtCallback(data);
+
         }
     }
 };

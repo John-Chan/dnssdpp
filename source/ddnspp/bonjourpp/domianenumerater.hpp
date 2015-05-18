@@ -107,13 +107,15 @@ private:
         }
 
         if(evtCallback) {
-			evtCallback(
-				shared_from_this(),
-                flags,
-                interfaceIndex,
-                err,
-                replyDomain
-            );
+			air::bonjour::DomainEnumerationData data;
+			data.domainName		=	replyDomain;
+			data.error			=	err;
+			data.flags			=	flags;
+			data.interfaceIndex	=	interfaceIndex;
+			data.owner			=	shared_from_this();
+
+			evtCallback(data);
+
         }
     }
 };

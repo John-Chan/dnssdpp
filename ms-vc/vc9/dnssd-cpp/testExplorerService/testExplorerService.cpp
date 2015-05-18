@@ -27,63 +27,51 @@ void	listAllService( air::bonjour::ServiceTypeList& list)
 void	onResolveAddress
 (
  air::bonjour::ServiceFactory& fac,
- air::bonjour::AddressResolverPtr owner,
- DNSServiceFlags flags,
- boost::uint32_t interfaceIndex,
- air::bonjour::BonjourError err,
- std::string hostname,		//hostname the hostname that you ask for rsolve address
- boost::asio::ip::address address,
- boost::uint32_t ttl
+ air::bonjour::AddressResolveData	data
  )
 {
-	if(err){
-		std::cout<< "onResolveAddress fail:"<< err.getMessage() <<std::endl;
+	if(data.error){
+		std::cout<< "onResolveAddress fail:"<< data.error.getMessage() <<std::endl;
 	}else{
-		std::cout<< "onResolveAddress success:"<<  hostname << " <= "<<address.to_string() <<std::endl;
+		std::cout<< "onResolveAddress success:"<<  data.hostName << " <= "<<data.addr.to_string() <<std::endl;
 	}
 	//
 }
+//
 void	onResolveService(air::bonjour::ServiceFactory& fac,
-						 air::bonjour::ServiceResolverPtr owner,
-						 DNSServiceFlags falg,
-						 boost::uint32_t interfaceIndex,
-						 air::bonjour::BonjourError err,
-						 std::string service_name,
-						 std::string host,
-						 boost::uint16_t port,
-						 air::bonjour::TxtRecordDecoderPtr ptr)
+						 air::bonjour::ServiceResolveData data)
 {
 	air::bonjour::AddressResolverPtr service;
 
 	/// must close it or you got xxx alive 2 minutes error in windows event manager
-	fac.removeService(owner);
-	owner->close();
-	owner.reset();
-	if(!err){
+	fac.removeService(data.owner);
+	data.owner->close();
+	data.owner.reset();
+
+	air::bonjour::BonjourError err;
+	if(!data.error){
 		//service=fac.createAddressResolver(air::bonjour::IP_V4,host,NULL,err);
 		service=fac.createAddressResolver(
 			air::bonjour::IP_V4,
-			host,
-			boost::bind(&onResolveAddress, boost::ref(fac), _1, _2, _3, _4, _5, _6,_7),
+			data.hostName,
+			boost::bind(&onResolveAddress, boost::ref(fac), _1 ),
 			err);
 	}
 	if(err){
 		std::cout<< "createAddressResolver fail:"<< err.getMessage() <<std::endl;
 	}
 }
+
 void	onFoundService(air::bonjour::ServiceFactory& fac,
-					   air::bonjour::RemoteServicePtr owner,
-					   DNSServiceFlags falg,
-					   boost::uint32_t interfaceIndex,
-					   air::bonjour::BonjourError err,
-					   std::string name,
-					   std::string type,
-					   std::string domain)
+					   air::bonjour::RemoteServiceData	data)
 {
 	//air::bonjour::ServiceResolverPtr rolser=fac.createServiceResolver(name,type,domain,err);
 	air::bonjour::ServiceResolverPtr rolser;
-	if(!err){
-		rolser=fac.createServiceResolver(name,type,domain,boost::bind(&onResolveService,boost::ref(fac),_1,_2,_3,_4,_5,_6,_7,_8),err);
+
+	air::bonjour::BonjourError err;
+	if(!data.error){
+		//rolser=fac.createServiceResolver(name,type,domain,boost::bind(&onResolveService,boost::ref(fac),_1,_2,_3,_4,_5,_6,_7,_8),err);
+		rolser=fac.createServiceResolver(data.serviceName,data.serviceType,data.domainName,boost::bind(&onResolveService,boost::ref(fac),_1),err);
 	}
 	if(err){
 		std::cout<< "createServiceResolver fail:"<< err.getMessage() <<std::endl;
@@ -126,7 +114,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	while (it != over){
 		//air::bonjour::RemoteServicePtr srv=fac.createServiceBrower(*it,"local",err);
-		air::bonjour::RemoteServicePtr srv=fac.createServiceBrower(*it,"local",boost::bind(&onFoundService,boost::ref(fac),_1,_2,_3,_4,_5,_6,_7),err);
+		air::bonjour::RemoteServicePtr srv=fac.createServiceBrower(*it,"local",boost::bind(&onFoundService,boost::ref(fac),_1),err);
 		if(NULL == srv){
 			std::cout<< "createServiceBrower fail:"<< err.getMessage() <<std::endl;
 		}else{

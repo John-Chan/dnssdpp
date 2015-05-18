@@ -134,18 +134,20 @@ private:
         }
 
         if(evtCallback) {
-            evtCallback(
-				shared_from_this(),
-                flags,
-                interfaceIndex,
-                err,
-                internalPort,
-                warped_external_address,
-				externalPort,
-				protoType,
-                ttl,
-				natStatus
-            );
+			air::bonjour::NatMapingData	data;
+			data.error			=err;
+			data.externalAddr	= warped_external_address;
+			data.externalPort	= externalPort;
+			data.flags			= flags;
+			data.interfaceIndex	= interfaceIndex;
+			data.internalPort	= internalPort;
+			data.natStatus		= natStatus;
+			data.owner			= shared_from_this();
+			data.protoType		= protoType;
+			data.ttl			= ttl;
+
+            evtCallback(data);
+
         }
     }
 };

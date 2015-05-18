@@ -122,16 +122,18 @@ namespace air{namespace bonjour {
 			}
 		}
 		if(evtCallback){
-			evtCallback(
-				shared_from_this(),
-				flags,
-				interfaceIndex,
-				err,
-				fullname,
-				hosttarget,
-				air::common::as_be16(port),
-				TxtRecordDecoderPtr(new TxtRecordDecoder(core->getApiProvider(),txtRecord,txtLen))
-				);
+			air::bonjour::ServiceResolveData data;
+			data.error	=err;
+			data.flags	=flags;
+			data.fullServiceName	=fullname;
+			data.hostName			=hosttarget;
+			data.interfaceIndex		=interfaceIndex;
+			data.owner				=shared_from_this();
+			data.port				=air::common::as_be16(port);
+			data.recordDecoder		=TxtRecordDecoderPtr(new TxtRecordDecoder(core->getApiProvider(),txtRecord,txtLen));
+
+			evtCallback(data);
+
 		}
 
 	}

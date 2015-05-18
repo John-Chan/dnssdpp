@@ -11,6 +11,10 @@
 #include <boost/thread.hpp>
 #include <list>
 
+void	onNatDone(air::bonjour::NatMapingData	data)
+{
+	//
+}
 
 
 int	run_test()
@@ -44,6 +48,8 @@ int	run_test()
 		LOG_INFO<<"para - externalPort:"<<externalPort;
 		LOG_INFO<<"para - ttl:"<<ttl_second;
 	}
+
+	/*
 	air::bonjour::NatMappingServicePtr srv=fac.createNatMappingService(
 		0,
 		proto,
@@ -52,8 +58,20 @@ int	run_test()
 		ttl_second, 
 		NULL,
 		err);
+		*/
+
+
+	air::bonjour::NatMappingServicePtr srv=fac.createNatMappingService(
+		0,
+		proto,
+		internalPort,
+		externalPort,
+		ttl_second, 
+		boost::bind(&onNatDone,_1),
+		err);
+	//onNatDone
 	if(NULL == srv){
-		std::cout<< "createServiceBrower fail:"<< err.getMessage() <<std::endl;
+		std::cout<< "createNatMappingService fail:"<< err.getMessage() <<std::endl;
 	}
 
 	boost::thread_group threads;
@@ -67,6 +85,7 @@ int	run_test()
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
+	muradin::loger_v2::setGlobalLogLvl(muradin::loger_v2::LOG_LVL_TRACE);
 	run_test();
 	return 0;
 }

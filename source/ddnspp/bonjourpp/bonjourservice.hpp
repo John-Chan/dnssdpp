@@ -120,14 +120,18 @@ private:
         }
 
         if(evtCallback) {
-			evtCallback(
-				shared_from_this(),
-                flags,
-                err,
-                name,
-                regtype,
-                domain
-            );
+
+			air::bonjour::LocalServiceData	data;
+
+			data.domainName		=	domain;
+			data.error			=	err;
+			data.flags			=	flags;
+			data.owner			=	shared_from_this();
+			data.serviceName	=	name;
+			data.serviceType	=	regtype;
+
+			evtCallback(data);
+
         }
     }
 

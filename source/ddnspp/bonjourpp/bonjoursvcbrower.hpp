@@ -111,15 +111,18 @@ private:
         }
 
         if(evtCallback) {
-			evtCallback(
-				shared_from_this(),
-                flags,
-                interfaceIndex,
-                err,
-                serviceName,
-                regtype,
-                replyDomain
-            );
+			air::bonjour::RemoteServiceData	data;
+
+			data.domainName			=	replyDomain;
+			data.error			=	err;
+			data.flags			=	flags;
+			data.owner			=	shared_from_this();
+			data.interfaceIndex	=	interfaceIndex;
+			data.serviceName	=	serviceName;
+			data.serviceType	=	regtype;
+
+			evtCallback(data);
+
         }
     }
 
