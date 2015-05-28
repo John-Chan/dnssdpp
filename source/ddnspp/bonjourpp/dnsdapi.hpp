@@ -54,6 +54,11 @@ typedef struct BonjourExports_ {
 
 	/// NAT
 	FuncDNSServiceNATPortMappingCreate	funcDNSServiceNATPortMappingCreate;
+
+	///misc
+	FuncDNSServiceGetProperty			funcDNSServiceGetProperty;
+	FuncDNSServiceConstructFullName		funcDNSServiceConstructFullName;
+	
 } BonjourExports;
 
 class DNSDApi
@@ -73,11 +78,16 @@ public:
                     haveRecordParsingFuncs(test)			&&
                     haveAddressResolveFuncs(test)			&&
                     haveDomainEnumerationFuncs(test)		&&
-					haveNatMappingFuncs(test)
+					haveNatMappingFuncs(test)				&&
+					haveMiscFuncs(test)
                );
 
     }
-
+	static bool    DNSDApi::haveMiscFuncs(const BonjourExports& test)
+	{
+		return (test.funcDNSServiceGetProperty != NULL &&
+				test.funcDNSServiceConstructFullName != NULL);
+	}
     static bool    DNSDApi::haveSocketAccessFuncs(const BonjourExports& test)
     {
         return (test.funcDNSServiceRefSockFD != NULL &&
@@ -137,9 +147,7 @@ public:
     //  those functions not loaded:
     //
     //  DNSServiceAddRecord
-    //  DNSServiceConstructFullName
     //  DNSServiceCreateConnection
-    //  DNSServiceGetProperty
     //  DNSServiceQueryRecord
     //  DNSServiceReconfirmRecord
     //  DNSServiceRegisterRecord
@@ -178,6 +186,10 @@ public:
             exported.funcDNSServiceEnumerateDomains=dll.load_dll_func<FuncDNSServiceEnumerateDomains>("DNSServiceEnumerateDomains") ;
 			///
 			exported.funcDNSServiceNATPortMappingCreate=dll.load_dll_func<FuncDNSServiceNATPortMappingCreate>("DNSServiceNATPortMappingCreate") ;
+
+			///
+			exported.funcDNSServiceGetProperty=dll.load_dll_func<FuncDNSServiceGetProperty>("DNSServiceGetProperty") ;
+			exported.funcDNSServiceConstructFullName=dll.load_dll_func<FuncDNSServiceConstructFullName>("DNSServiceConstructFullName") ;
 
         }
         return haveAll(exported);

@@ -323,44 +323,45 @@ public:
 		const AddressResolverEvtCallback& func,
 		BonjourError& err
 		)
-{
-	/************************************************************************
-	* flags:           kDNSServiceFlagsForceMulticast or kDNSServiceFlagsLongLivedQuery.
-	*                  Pass kDNSServiceFlagsLongLivedQuery to create a "long-lived" unicast
-	*                  query in a non-local domain. Without setting this flag, unicast queries
-	*                  will be one-shot - that is, only answers available at the time of the call
-	*                  will be returned. By setting this flag, answers (including Add and Remove
-	*                  events) that become available after the initial call is made will generate
-	*                  callbacks. This flag has no effect on link-local multicast queries.                                                                  
-	************************************************************************/
+	{
+		/************************************************************************
+		* flags:           kDNSServiceFlagsForceMulticast or kDNSServiceFlagsLongLivedQuery.
+		*                  Pass kDNSServiceFlagsLongLivedQuery to create a "long-lived" unicast
+		*                  query in a non-local domain. Without setting this flag, unicast queries
+		*                  will be one-shot - that is, only answers available at the time of the call
+		*                  will be returned. By setting this flag, answers (including Add and Remove
+		*                  events) that become available after the initial call is made will generate
+		*                  callbacks. This flag has no effect on link-local multicast queries.                                                                  
+		************************************************************************/
 
-	LOG_DEBUG<<"create AddressResolver";
+		LOG_DEBUG<<"create AddressResolver";
 
-	AddressResolverPtr service(new AddressResolver(ioService,dnsDll,func));
-	//DNSServiceFlags flags=kDNSServiceFlagsReturnIntermediates;
-	DNSServiceFlags flags=kDNSServiceFlagsLongLivedQuery;
-	boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
+		AddressResolverPtr service(new AddressResolver(ioService,dnsDll,func));
+		//DNSServiceFlags flags=kDNSServiceFlagsReturnIntermediates;
+		DNSServiceFlags flags=kDNSServiceFlagsLongLivedQuery;
+		boost::uint32_t interfaceIndex=kDNSServiceInterfaceIndexAny;
 
-	die_on_null(dnsDll.getFunctiontable().funcDNSServiceGetAddrInfo);
+		die_on_null(dnsDll.getFunctiontable().funcDNSServiceGetAddrInfo);
 
-	DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceGetAddrInfo(
-		&service->getCoreContext()->getDNSServiceRef(),
-		flags,
-		interfaceIndex,
-		protocol,
-		hostname.c_str(),
-		AddressResolver::DNSServiceGetAddrInfoReplyCallback,
-		service.get());
-	err.reset(err_code);
-	if(!err){
-		hold(service);
-		service->getCoreContext()->startEventLoop(service);
-		TEST_NO_DANGLING_PTR(service);
-	}else{
-		service.reset();
+		DNSServiceErrorType err_code= dnsDll.getFunctiontable().funcDNSServiceGetAddrInfo(
+			&service->getCoreContext()->getDNSServiceRef(),
+			flags,
+			interfaceIndex,
+			protocol,
+			hostname.c_str(),
+			AddressResolver::DNSServiceGetAddrInfoReplyCallback,
+			service.get());
+		err.reset(err_code);
+		if(!err){
+			hold(service);
+			service->getCoreContext()->startEventLoop(service);
+			TEST_NO_DANGLING_PTR(service);
+		}else{
+			service.reset();
+		}
+		return service;
 	}
-	return service;
-}
+
 	/**
      * @brief Domain Enumeration
      * @param interfaceIndex  can be 0(recommended),If non-zero, specifies the interface on which to look for domains
@@ -405,7 +406,7 @@ public:
 	
 	/**
      * @brief NatMapping
-	 * @param interfaceIndex  can be 0(recommended),If non-zero, specifies the interface on which to look for domains
+	 * @param interfaceIndex  The interface on which to create port mappings in a NAT gateway. Passing 0 causes  the port mapping request to be sent on the primary interface.
 	 * @param prototype 
 	 * @param internalPort The port number in network byte order on the local machine which is listening for packets
 	 * @param externalPort Pass 0 if you don't care which external port is chosen for you.

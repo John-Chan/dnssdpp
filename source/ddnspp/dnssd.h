@@ -21,6 +21,7 @@
 /// the follow 2 header is useful for user
 #include <ddnspp/bonjourpp/servicefactory.hpp>		/// used to create a service to do something
 #include <ddnspp/bonjourpp/dnsd_callback.hpp>		/// callback func definition,used to receive event  
+#include <ddnspp/bonjourpp/bonjour_utl.hpp>			/// utility staff
 
 
 

@@ -50,6 +50,16 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::cout<< "dll.load fail"<<std::endl;
 		return -1;
 	}
+	air::bonjour::BonjourUtility utl(dll);
+	unsigned int sdk_ver,daemon_ver;
+	unsigned int sdk_ver_major,sdk_ver_min, daemon_ver_major,daemon_ver_min;
+	sdk_ver = utl.getSdkVersionDef(0);
+	daemon_ver= utl.getDaemonVersionDef(0);
+	air::bonjour::BonjourUtility::extractVersionNumber(sdk_ver,sdk_ver_major,sdk_ver_min);
+	air::bonjour::BonjourUtility::extractVersionNumber(daemon_ver,daemon_ver_major,daemon_ver_min);
+	LOG_INFO<<"Use bonjour SDK ,version: "<< sdk_ver_major<<"."<<sdk_ver_min;
+	LOG_INFO<<"Bonjour Server ,version: "<< daemon_ver_major<<"."<<daemon_ver_min;
+
 	// "vv=1 pw=0 srcvers=150.33 deviceid=00:0E:C6:F5:6B:46 features=0x100029ff model=AppleTV3,1 "
 	air::common::StringMap airPlayRecords;
 	airPlayRecords.insert(air::common::StringMap::value_type("vv","1"));

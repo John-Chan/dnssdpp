@@ -3,6 +3,77 @@
 
 #include <ddnspp/bonjourpp/apple_dnsd_incl.h>
 
+
+/*********************************************************************************************
+ *
+ * Version checking
+ *
+ *********************************************************************************************/
+
+/* DNSServiceGetProperty() Parameters:
+ *
+ * property:        The requested property.
+ *                  Currently the only property defined is kDNSServiceProperty_DaemonVersion.
+ *
+ * result:          Place to store result.
+ *                  For retrieving DaemonVersion, this should be the address of a uint32_t.
+ *
+ * size:            Pointer to uint32_t containing size of the result location.
+ *                  For retrieving DaemonVersion, this should be sizeof(uint32_t).
+ *                  On return the uint32_t is updated to the size of the data returned.
+ *                  For DaemonVersion, the returned size is always sizeof(uint32_t), but
+ *                  future properties could be defined which return variable-sized results.
+ *
+ * return value:    Returns kDNSServiceErr_NoError on success, or kDNSServiceErr_ServiceNotRunning
+ *                  if the daemon (or "system service" on Windows) is not running.
+ */
+
+typedef DNSServiceErrorType (DNSSD_API *FuncDNSServiceGetProperty)(
+	const char *property,  /* Requested property (i.e. kDNSServiceProperty_DaemonVersion) */
+	void       *result,    /* Pointer to place to store result */
+	uint32_t   *size       /* size of result location */
+	);
+
+/*********************************************************************************************
+ *
+ *  General Utility Functions
+ *
+ *********************************************************************************************/
+
+/* DNSServiceConstructFullName()
+ *
+ * Concatenate a three-part domain name (as returned by the above callbacks) into a
+ * properly-escaped full domain name. Note that callbacks in the above functions ALREADY ESCAPE
+ * strings where necessary.
+ *
+ * Parameters:
+ *
+ * fullName:        A pointer to a buffer that where the resulting full domain name is to be written.
+ *                  The buffer must be kDNSServiceMaxDomainName (1009) bytes in length to
+ *                  accommodate the longest legal domain name without buffer overrun.
+ *
+ * service:         The service name - any dots or backslashes must NOT be escaped.
+ *                  May be NULL (to construct a PTR record name, e.g.
+ *                  "_ftp._tcp.apple.com.").
+ *
+ * regtype:         The service type followed by the protocol, separated by a dot
+ *                  (e.g. "_ftp._tcp").
+ *
+ * domain:          The domain name, e.g. "apple.com.". Literal dots or backslashes,
+ *                  if any, must be escaped, e.g. "1st\. Floor.apple.com."
+ *
+ * return value:    Returns kDNSServiceErr_NoError (0) on success, kDNSServiceErr_BadParam on error.
+ *
+ */
+typedef DNSServiceErrorType (DNSSD_API *FuncDNSServiceConstructFullName)(
+	char                            *fullName,
+	const char                      *service,      /* may be NULL */
+	const char                      *regtype,
+	const char                      *domain
+	);
+
+
+
 /*********************************************************************************************
  *
  *  Service Registration

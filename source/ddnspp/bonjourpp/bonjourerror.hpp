@@ -133,11 +133,15 @@ public:
 
     typedef void (*unspecified_bool_type)();
     static void unspecified_bool_true() {}
-	static boost::int32_t    good()
+	static boost::int32_t    goodCode()
 	{
 		return kDNSServiceErr_NoError;
 	}
 
+	bool	isGood()const
+	{
+		return goodCode() == ec;
+	}
 
 	void	reset(boost::int32_t code)
 	{
@@ -150,12 +154,12 @@ public:
 
     operator unspecified_bool_type() const   // true if error
     {
-        return ec == good() ? 0 : unspecified_bool_true;
+        return ec == goodCode() ? 0 : unspecified_bool_true;
     }
 
     bool operator!() const   // true if no error
     {
-        return ec == good();
+        return ec == goodCode();
     }
 
 
