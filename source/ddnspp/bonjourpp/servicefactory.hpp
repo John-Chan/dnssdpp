@@ -122,6 +122,9 @@ public:
 	ServiceFactory(boost::asio::io_service& ios,const DNSDApi& dll)
 		:ioService(ios),dnsDll(dll)
 	{
+		int major=0, minor=0;
+		DNSDApi::getSdkVer(major,minor);
+		LOG_WARN<<"ServiceFactory init.... Bonjour SDK :"<<major <<"."<<minor;
 	}
 
 	~ServiceFactory()

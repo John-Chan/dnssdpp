@@ -69,6 +69,11 @@ private:
 public:
 
 
+	static	void		getSdkVer(int& major,int& minor)
+	{
+		major=_DNS_SD_H/10000;
+		minor=_DNS_SD_H%10000;
+	}
     static bool    DNSDApi::haveAll(const BonjourExports& test)
     {
         return (	haveServiceRegistrationFuncs(test)		&&
